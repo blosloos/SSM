@@ -11,7 +11,7 @@ run_daily_load <- function( # one function run per compound
 	hospital_beds_total = FALSE,						# Set to FALSE to ignore
 	STP_id,
 	STP_treatment_steps,
-	STP_fraction_hospital= FALSE,
+	STP_fraction_hospital = FALSE,
 	STP_amount_inhabitants,	
 	STP_amount_hospital_beds = FALSE,					# Set to FALSE to ignore
 	STP_elimination_rate = FALSE,
@@ -19,7 +19,7 @@ run_daily_load <- function( # one function run per compound
 	compound_load_gramm_per_capita_and_day = FALSE,		# [g / E d], set to FALSE to ignore and then use compound_load_total
 	compound_load_per_hospital_bed_and_day = FALSE, 	# [g / E d], set to FALSE to ignore and then use compound_load_total
 	compound_elimination_STP,							# named dataframe or vector with elimination fractions over treatment steps (not percentage values); set to 0 to skip a step 
-	compound_elimination_method = "micropollutants",	# "micropollutants" or "nutrients"
+	compound_elimination_method = "micropollutants",	# "micropollutants" or "STP individual"
 	compound_excreted = 1,								# fraction excreted and discharged, set to 1 to ignore
 	
 	with_lake_elimination = FALSE,
@@ -29,7 +29,7 @@ run_daily_load <- function( # one function run per compound
 	absolute_loads = FALSE,
 	
 	topo_matrix,
-	ARANEXTNR
+	STP_next
 	
 ){
 
@@ -38,12 +38,12 @@ run_daily_load <- function( # one function run per compound
 	
 	if(!is.data.frame(compound_elimination_STP) & is.vector(compound_elimination_STP)) stop("Problem in wrap_vsa, argument compound_elimination_STP is not a dataframe.")
 	if(any(!sapply(compound_elimination_STP, is.numeric))) stop("Problem in wrap_vsa, dataframe compound_elimination_STP has non-numeric entries.")
-	STP_steps <- c("CSB_Abbau", "Nitrifikation", "Denitrifikation", "P_Elimination", "GAK", "Kombi", "Ozonung", "PAK", "Ausbau")
+	STP_steps <- c("CSB_Abbau", "nitrification", "denitrification", "P_elimination", "GAK", "Kombi", "Ozonung", "PAK", "Ausbau")
 	not_found <- !(STP_steps %in% names(compound_elimination_STP))
 	if(any(not_found)) stop("Problem in wrap_vsa, argument compound_elimination_STP: entry ", compound_elimination_STP[not_found], " is missing.")
 	if(any((compound_elimination_STP < 0) & (compound_elimination_STP > 1))) stop("Problem in run_daily_load: compound_elimination_STP not within [0,1]")
-	if(!(compound_elimination_method %in% c("micropollutants", "nutrients", "WWTP individual"))) stop("Problem in run_daily_load: invalid compound_elimination_method, must be either micropollutants, nutrients or WWTP individual.")
-	if((compound_elimination_method == "WWTP individual") & (STP_elimination_rate[1] == FALSE)) stop("Problem in run_daily_load: compound_elimination_method set to WWTP individual, but no STP_elimination_rate provided. Please revise.")
+	if(!(compound_elimination_method %in% c("micropollutants", "STP individual"))) stop("Problem in run_daily_load: invalid compound_elimination_method, must be either micropollutants or STP individual.")
+	if((compound_elimination_method == "STP individual") & (STP_elimination_rate[1] == FALSE)) stop("Problem in run_daily_load: compound_elimination_method set to STP individual, but no STP_elimination_rate provided. Please revise.")
 	
 	if(!all(STP_id %in% colnames(topo_matrix))) stop("Problem in run_daily_load: not all STP_id present in topo_matrix")
 	if(!all(colnames(topo_matrix) %in% STP_id)) stop("Problem in run_daily_load: not all topo_matrix entries present in STP_id")
@@ -56,8 +56,8 @@ run_daily_load <- function( # one function run per compound
 	if(!is.numeric(compound_load_total) & !is.numeric(compound_load_gramm_per_capita_and_day)) stop("Problem in run_daily_load: either compound_load_total or compound_load_gramm_per_capita_and_day must be defined.")
 	topo_matrix[topo_matrix != 0] <- 1 	# in case topo_matrix contains STP id
 
-	that_not <- which(!(ARANEXTNR[!is.na(ARANEXTNR)] %in% STP_id))
-	if(length(that_not)) stop(paste0("Invalid ARANEXTNR entry detected: ", paste(ARANEXTNR[!is.na(ARANEXTNR)][that_not], collapse = ", ")))
+	that_not <- which(!(STP_next[!is.na(STP_next)] %in% STP_id))
+	if(length(that_not)) stop(paste0("Invalid STP_next entry detected: ", paste(STP_next[!is.na(STP_next)][that_not], collapse = ", ")))
 
 	if(any(is.na(STP_amount_inhabitants))) stop("Problem in run_daily_load: STP_amount_inhabitants contains NAs")
 
@@ -77,18 +77,18 @@ run_daily_load <- function( # one function run per compound
 			
 				compound_elimination_STP_calc[i] <- prod(1 - c(				
 					
-					if(STP_treatment_steps[i, "Nitrifikation"] == "Ja") compound_elimination_STP$Nitrifikation else compound_elimination_STP$CSB_Abbau,
+					if(STP_treatment_steps[i, "nitrification"] == "Ja") compound_elimination_STP$nitrification else compound_elimination_STP$CSB_Abbau,
 									
-					if(STP_treatment_steps[i, "Erhoehte_Denitrifikation"] == "Ja") compound_elimination_STP$Erhoehte_Denitrifikation else{
-						# Denitrifikation should only be available if there is a prior Nitrifikation, too - not further checked
-						if(STP_treatment_steps[i, "Denitrifikation"] == "Ja") compound_elimination_STP$Denitrifikation
+					if(STP_treatment_steps[i, "elevated_denitrification"] == "Ja") compound_elimination_STP$elevated_denitrification else{
+						# denitrification should only be available if there is a prior nitrification, too - not further checked
+						if(STP_treatment_steps[i, "denitrification"] == "Ja") compound_elimination_STP$denitrification
 					},
 					
-					if(STP_treatment_steps[i, "P_Elimination"] == "Ja") compound_elimination_STP$P_Elimination,		
+					if(STP_treatment_steps[i, "P_elimination"] == "Ja") compound_elimination_STP$P_elimination,		
 					
-					if(!is.na(STP_treatment_steps[i, "Typ_MV-Behandlung"])){
+					if(!is.na(STP_treatment_steps[i, "type_advanced_treatment"])){
 						compound_elimination_STP[
-							names(compound_elimination_STP) == STP_treatment_steps[i, "Typ_MV-Behandlung"]
+							names(compound_elimination_STP) == STP_treatment_steps[i, "type_advanced_treatment"]
 						][[1]]
 					}else 0
 					
@@ -96,23 +96,7 @@ run_daily_load <- function( # one function run per compound
 				if(is.na(compound_elimination_STP_calc[i])) stop("Problem in run_daily_load: NA for compound_elimination_STP_calc detected.")
 			}
 			#######################################
-			if(compound_elimination_method == "nutrients"){			
-			
-				compound_elimination_STP_calc[i] <- (1 - c(	
-			
-					if(STP_treatment_steps[i, "Erhoehte_Denitrifikation"] == "Ja") compound_elimination_STP$Erhoehte_Denitrifikation else{
-						if(STP_treatment_steps[i, "Denitrifikation"] == "Ja") compound_elimination_STP$Denitrifikation else{
-							if(STP_treatment_steps[i, "Nitrifikation"] == "Ja") compound_elimination_STP$Nitrifikation else{ 
-								compound_elimination_STP$CSB_Abbau
-							}
-						}
-					}
-			
-				))
-			
-			}
-			#######################################
-			if(compound_elimination_method == "WWTP individual"){ 
+			if(compound_elimination_method == "STP individual"){ 
 				
 				if(!length(STP_elimination_rate[i])) next
 				if(is.na(STP_elimination_rate[i])) next
@@ -154,7 +138,7 @@ run_daily_load <- function( # one function run per compound
 	
 		not_loop_endless <- 0 # just to be save
 		
-		ARANEXTNR_iter <- ARANEXTNR
+		STP_next_iter <- STP_next
 		do_calc_node <- rep(TRUE, length(STP_id))
 		while(
 			any(do_calc_node) &
@@ -167,15 +151,15 @@ run_daily_load <- function( # one function run per compound
 				if(!do_calc_node[k]) next
 				
 				# (2) still awaiting load input?
-				if(STP_id[k] %in% ARANEXTNR_iter) next		
+				if(STP_id[k] %in% STP_next_iter) next		
 		
 				# (3) for lakes: reduce load before adding on
 				load_cumulated_g_d[k] <- load_cumulated_g_d[k] * (1 - lake_eliminination_rates[k])		
 
 				# (4) adding on load to next STP or lake
-				if(!is.na(ARANEXTNR_iter[k])){
-					load_cumulated_g_d[STP_id == ARANEXTNR_iter[k]] <- load_cumulated_g_d[STP_id == ARANEXTNR_iter[k]] + load_cumulated_g_d[k]
-					ARANEXTNR_iter[k] <- NA
+				if(!is.na(STP_next_iter[k])){
+					load_cumulated_g_d[STP_id == STP_next_iter[k]] <- load_cumulated_g_d[STP_id == STP_next_iter[k]] + load_cumulated_g_d[k]
+					STP_next_iter[k] <- NA
 				}
 
 				# (5) mark that node has been done
@@ -187,14 +171,7 @@ run_daily_load <- function( # one function run per compound
 			
 		}
 		if(not_loop_endless >= 1E5) stop("Load routing through ARA and lake network did not finish within expected number of iterations. Debug input data; any circularities?") 
-	
-		if(FALSE){ # some test -> outcomment above step (3) -> results as derived from topo_matrix sum should be the same
-			load_cumulated_g_d_check <- rep(NA, length(load_local_g_d)) 
-			for(n in 1:ncol(topo_matrix)) load_cumulated_g_d_check[n] <- sum(topo_matrix[, n] * load_local_g_d)
-			identical(round(load_cumulated_g_d_check, digits = 3), round(load_cumulated_g_d, digits = 3))		
-			cbind(load_cumulated_g_d_check, load_cumulated_g_d)[load_cumulated_g_d_check != load_cumulated_g_d,]
-		}
-	
+		
 	}
 	
 	inhabitants_cumulated <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y)}, y = STP_amount_inhabitants)

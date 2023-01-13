@@ -1,9 +1,9 @@
 
 
 package.skeleton(
-	name = "Swisssfm", 
+	name = "SSM", 
 	environment = .GlobalEnv,
-	path = "C:/PART_4/MS/R_packages/Swisssfm", 
+	path = "C:/PART_4/MS/R_packages/SSM", 
 	force = FALSE, code_files = character(), encoding = "unknown"
 )
 
@@ -13,32 +13,29 @@ package.skeleton(
 library(devtools)
 
 
-unload(pkg = "D:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
-clean_dll(pkg = "D:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
+unload(pkg = "D:/PART_4/MS/R_packages/SSM")
+clean_dll(pkg = "D:/PART_4/MS/R_packages/SSM")
 
-compile_dll(pkg = "D:/PART_4/MS/R_packages/Swisssfm/Swisssfm", quiet = FALSE)
-load_all(pkg = "D:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
+compile_dll(pkg = "D:/PART_4/MS/R_packages/SSM", quiet = FALSE)
+load_all(pkg = "D:/PART_4/MS/R_packages/SSM")
 
 #
-unload(pkg = "C:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
-clean_dll(pkg = "C:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
+unload(pkg = "C:/PART_4/MS/R_packages/SSM")
+clean_dll(pkg = "C:/PART_4/MS/R_packages/SSM")
 
-compile_dll(pkg = "C:/PART_4/MS/R_packages/Swisssfm/Swisssfm", quiet = FALSE)
-load_all(pkg = "C:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
-
-
-
-library(devtools)
-
-install_github("blosloos/Swisssfm")
-
-install_github("blosloos/Swisssfm_2")
+compile_dll(pkg = "C:/PART_4/MS/R_packages/SSM", quiet = FALSE)
+load_all(pkg = "C:/PART_4/MS/R_packages/SSM")
 
 
 
 library(devtools)
 
-install(pkg = "C:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
+install_github("blosloos/SSM")
+
+
+library(devtools)
+
+install(pkg = "C:/PART_4/MS/R_packages/SSM")
 
 
 #################################################################################
@@ -48,9 +45,9 @@ install(pkg = "C:/PART_4/MS/R_packages/Swisssfm/Swisssfm")
 ARA <- read.csv2(file = "D:/VSA/new_inputs/ARA_input.csv", header = TRUE, sep = ",")
 
 # 
-ARA$LageX
+ARA$X_position
 
-ARA$X_Koordinate[is.na(ARA$LageX)]
+ARA$X_Koordinate[is.na(ARA$X_position)]
 
 
 
@@ -60,31 +57,31 @@ sum(is.na(ARA$X_Koordinate))
 
 
 
-plot(ARA$X_Koordinate[!is.na(ARA$X_Koordinate) & !is.na(ARA$LageX)], ARA$LageX[!is.na(ARA$X_Koordinate) & !is.na(ARA$LageX)])
+plot(ARA$X_Koordinate[!is.na(ARA$X_Koordinate) & !is.na(ARA$X_position)], ARA$X_position[!is.na(ARA$X_Koordinate) & !is.na(ARA$X_position)])
 
-ARA$X_Koordinate[!is.na(ARA$X_Koordinate) & !is.na(ARA$LageX)] - ARA$LageX[!is.na(ARA$X_Koordinate) & !is.na(ARA$LageX)]
-
-
-plot(ARA$Y_Koordinate[!is.na(ARA$Y_Koordinate) & !is.na(ARA$LageY)], ARA$LageY[!is.na(ARA$Y_Koordinate) & !is.na(ARA$LageY)])
-
-ARA$Y_Koordinate[!is.na(ARA$Y_Koordinate) & !is.na(ARA$LageY)] - ARA$LageY[!is.na(ARA$Y_Koordinate) & !is.na(ARA$LageY)]
+ARA$X_Koordinate[!is.na(ARA$X_Koordinate) & !is.na(ARA$X_position)] - ARA$X_position[!is.na(ARA$X_Koordinate) & !is.na(ARA$X_position)]
 
 
-ARA$LageX[!is.na(ARA$X_Koordinate) & is.na(ARA$LageX)] <- ARA$X_Koordinate[!is.na(ARA$X_Koordinate) & is.na(ARA$LageX)] + 2000000
+plot(ARA$Y_Koordinate[!is.na(ARA$Y_Koordinate) & !is.na(ARA$Y_position)], ARA$Y_position[!is.na(ARA$Y_Koordinate) & !is.na(ARA$Y_position)])
 
-ARA$LageY[!is.na(ARA$Y_Koordinate) & is.na(ARA$LageY)] <- ARA$Y_Koordinate[!is.na(ARA$Y_Koordinate) & is.na(ARA$LageY)] + 1000000
-
-
-ARA$LageX[is.na(ARA$LageX)]
-ARA$LageY[is.na(ARA$LageY)]
+ARA$Y_Koordinate[!is.na(ARA$Y_Koordinate) & !is.na(ARA$Y_position)] - ARA$Y_position[!is.na(ARA$Y_Koordinate) & !is.na(ARA$Y_position)]
 
 
+ARA$X_position[!is.na(ARA$X_Koordinate) & is.na(ARA$X_position)] <- ARA$X_Koordinate[!is.na(ARA$X_Koordinate) & is.na(ARA$X_position)] + 2000000
+
+ARA$Y_position[!is.na(ARA$Y_Koordinate) & is.na(ARA$Y_position)] <- ARA$Y_Koordinate[!is.na(ARA$Y_Koordinate) & is.na(ARA$Y_position)] + 1000000
 
 
-Vorfluter_LageX <- ARA$Vorfluter_X_Koordinate + 2000000
-Vorfluter_LageY <- ARA$Vorfluter_Y_Koordinate + 1000000
+ARA$X_position[is.na(ARA$X_position)]
+ARA$Y_position[is.na(ARA$Y_position)]
 
-ARA <- cbind(ARA, Vorfluter_LageX, Vorfluter_LageY)
+
+
+
+Vorfluter_X_position <- ARA$Vorfluter_X_Koordinate + 2000000
+Vorfluter_Y_position <- ARA$Vorfluter_Y_Koordinate + 1000000
+
+ARA <- cbind(ARA, Vorfluter_X_position, Vorfluter_Y_position)
 
 
 
@@ -92,16 +89,16 @@ write.csv(ARA, file = "D:/VSA/new_inputs/ARA_input_corrected.csv")
 
 ARA <- read.csv2(file = "D:/VSA/new_inputs/ARA_input_corrected.csv", header = TRUE, sep = ",")
 
-ARA$ARANEXTNR %in% ARA[, 2]
+ARA$STP_next %in% ARA[, 2]
 
 
-ARA_missing_ARANEXT <- ARA[!is.na(ARA$ARANEXTNR),][!(ARA$ARANEXTNR[!is.na(ARA$ARANEXTNR)] %in% ARA[, 2]),]
+ARA_missing_ARANEXT <- ARA[!is.na(ARA$STP_next),][!(ARA$STP_next[!is.na(ARA$STP_next)] %in% ARA[, 2]),]
 
 
 
 
 
-ARA_missing_ARANEXT$ARANEXTNR %in% ARA[, 5] 
+ARA_missing_ARANEXT$STP_next %in% ARA[, 5] 
 
 
 
