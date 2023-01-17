@@ -13,11 +13,17 @@ package.skeleton(
 library(devtools)
 
 
-unload(pkg = "D:/PART_4/MS/R_packages/SSM")
-clean_dll(pkg = "D:/PART_4/MS/R_packages/SSM")
 
-compile_dll(pkg = "D:/PART_4/MS/R_packages/SSM", quiet = FALSE)
-load_all(pkg = "D:/PART_4/MS/R_packages/SSM")
+library(devtools)
+load_all("C:/PART_4/MS/R_packages/SSM")
+
+
+
+unload(pkg = "C:/PART_4/MS/R_packages/SSM")
+clean_dll(pkg = "C:/PART_4/MS/R_packages/SSM")
+
+compile_dll(pkg = "C:/PART_4/MS/R_packages/SSM", quiet = FALSE)
+load_all(pkg = "C:/PART_4/MS/R_packages/SSM")
 
 #
 unload(pkg = "C:/PART_4/MS/R_packages/SSM")
