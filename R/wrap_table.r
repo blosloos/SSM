@@ -1,10 +1,11 @@
 
 
 
+
 wrap_table <- function(
 
 	model_input_table = NULL,									# Must be a data.frame if provided, overwrites all of the below STP_ arguments
-	STP_scenario_year = strsplit(as.character(Sys.Date()), "-")[[1]][1],
+	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,									# Reroute STPs until a given STP_scenario_year
 	STP_filter_steps = TRUE,							# Filter STP treatment steps until a given STP_scenario_year
 	STP_discharge_per_capita = 400,						# [l / d]
@@ -16,7 +17,7 @@ wrap_table <- function(
 	with_lake_elimination = FALSE,
 	add_absolute_load = FALSE,
 	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
-	use_STP_elimination_rate = FALSE,
+	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
 	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
 	path_out = FALSE,									# if FALSE, return data.frame
 	overwrite = TRUE,
@@ -41,7 +42,7 @@ wrap_table <- function(
 	}
 	use_columns_local_discharge_for_fractions <- use_columns_local_discharge[1]
 	if((compound_elimination_method == "STP individual") & (use_STP_elimination_rate[1] == FALSE)) stop("compound_elimination_method set to STP individual, but no STP columns for use_STP_elimination_rate defined. Please revise.")
-	if(!is.numeric(STP_scenario_year)) stop("STP_scenario_year must be numeric")
+	if(!is.numeric(as.numeric(STP_scenario_year))) stop("STP_scenario_year not set correctly, please revise.")
 	if(!is.null(model_input_table) & !is.data.frame(model_input_table)) stop("model_input_table must be either NULL or a dataframe")
 	if(with_lake_elimination){
 		if(!("lake_elimination_min" %in% names(model_input_table))) stop("Column lake_elimination_min missing in model_input_table")
@@ -60,6 +61,9 @@ wrap_table <- function(
 	if(!identical(length(ID), length(ID_next), length(inhabitants))) stop("Problem in wrap_table: ID, ID_next and inhabitants must be of equal length.")
 	if(!overwrite & !is.logical(path_out)) if(file.exists(path_out)) stop("Problem in wrap_table: file at path_out already exists; remove it or use overwrite = TRUE.")
 	if(!file.exists(path_out)) dir.create(path = path_out)		
+	
+# <- deal with missing discharge
+	
 	###############################################			
 	
 	###############################################
@@ -92,9 +96,13 @@ wrap_table <- function(
 					model_input_table$ID_next[for_this_STP] <- to_STP_next
 				}
 			}
-			model_input_table_rerouted <- model_input_table[those,, drop = FALSE]
 			model_input_table <- model_input_table[-those,, drop = FALSE]
-		}else model_input_table_rerouted <- NULL
+			ID <- as.character(model_input_table$ID)
+			ID_next <- as.character(model_input_table$ID_next)
+			inhabitants <- as.numeric(gsub(".", "", as.character(model_input_table$inhabitants), fixed = TRUE))
+			inhabitants[is.na(inhabitants)] <- 0	# e.g. for lakes
+			STP_amount_people_local <- model_input_table$inhabitants
+		}
 	}
 	###############################################	
 	
@@ -109,12 +117,14 @@ wrap_table <- function(
 		)
 	}
 	STP_treatment_steps <- model_input_table[, c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"), drop = FALSE]
-	if(!all(STP_treatment_steps %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
 	STP_treatment_steps[is.na(STP_treatment_steps[, "nitrification"]), "nitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "denitrification"]), "denitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "P_elimination"]), "P_elimination"] <- "No"
 	STP_treatment_steps[STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined"), "type_advanced_treatment"] <- NA
-	if(STP_filter_steps) STP_treatment_steps[which(STP_treatment_steps[, "starting_year_advanced_treatment"] > STP_scenario_year), "type_advanced_treatment"] <- NA		
+	if(STP_filter_steps) STP_treatment_steps[which(as.numeric(STP_treatment_steps[, "starting_year_advanced_treatment"]) > as.numeric(STP_scenario_year)), "type_advanced_treatment"] <- NA		
 	###############################################	
 
 	###############################################	
@@ -152,7 +162,7 @@ wrap_table <- function(
 		result_table <- SSM:::calc_load(	# calculate local and cumulative loads [g / d]
 			ID = ID,
 			STP_treatment_steps = STP_treatment_steps,
-			ID_next = model_input_table$ID_next
+			ID_next = model_input_table$ID_next,
 			inhabitants = inhabitants,
 			STP_elimination = use_STP_elimination_loop,
 			compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day_loop,
@@ -241,7 +251,7 @@ wrap_table <- function(
 		is.na(STP_treatment_steps[, "type_advanced_treatment"])
 	] <- "nitrification"	
 	classed[
-		(STP_treatment_steps[, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
+		(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		is.na(STP_treatment_steps[, "type_advanced_treatment"])
 	] <- "denitrification"		
@@ -254,49 +264,58 @@ wrap_table <- function(
 	STP_amount_people_local_classed[classed != "only_C_degradation"] <- 0
 	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_only_C_removal <- round(sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s, digits = 3)
+	Fraction_of_wastewater_only_C_removal <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 	
 	# nitrification
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "nitrification"] <- 0
 	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_nitrification <- round(sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s, digits = 3)
+	Fraction_of_wastewater_nitrification <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 	
 	# denitrification
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "denitrification"] <- 0
 	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_denitrification <- round(sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s, digits = 3)
+	Fraction_of_wastewater_denitrification <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 
 	# has_treatment
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "has_treatment"] <- 0
 	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_advanced_treatment <- round(sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s, digits = 3)
+	Fraction_of_wastewater_advanced_treatment <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 	
 	# !has_treatment	
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed == "has_treatment"] <- 0
 	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_no_advanced_treatment <- round(sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s, digits = 3)
+	Fraction_of_wastewater_no_advanced_treatment <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 	
 	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(STP_local_discharge_river / sewage_discharge_cumulated_classed, digits = 3)	
 	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge <- Fraction_of_wastewater_no_advanced_treatment * Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge
 
 	# rowsums for fractions must add up
-	if(any(rowSums(cbind(
+	has_row_sums <- rowSums(cbind(
 			"Fraction_of_wastewater_only_C_removal" = Fraction_of_wastewater_only_C_removal,
 			"Fraction_of_wastewater_nitrification" = Fraction_of_wastewater_nitrification,
 			"Fraction_of_wastewater_denitrification" = Fraction_of_wastewater_denitrification,
 			"Fraction_of_wastewater_advanced_treatment" = Fraction_of_wastewater_advanced_treatment
-		)) != 1)) stop("Missing treatment fractions in wrap_table - revise")
+		))	
+	has_row_sums <- round(has_row_sums, digits = 5) # avoid rounding inaccuracies
+	if(any(has_row_sums != 1)) stop("Wrong treatment fractions in wrap_table - revise")
 	
+	Fraction_of_wastewater_only_C_removal <- round(Fraction_of_wastewater_only_C_removal, digits = 3)
+	Fraction_of_wastewater_nitrification <- round(Fraction_of_wastewater_nitrification, digits = 3)
+	Fraction_of_wastewater_denitrification <- round(Fraction_of_wastewater_denitrification, digits = 3)
+	Fraction_of_wastewater_advanced_treatment <- round(Fraction_of_wastewater_advanced_treatment, digits = 3)
+	Fraction_of_wastewater_no_advanced_treatment <- round(Fraction_of_wastewater_no_advanced_treatment, digits = 3)
+		
 	result_table <- cbind(result_table, 
 		"STP_local_discharge_L_s" = inhabitants * STP_discharge_per_capita / (24 * 60 * 60),
+		"STP_cumulated_discharge_L_s" = STP_cumulated_discharge_L_s,
 		"Fraction_STP_discharge_of_river_local" = Fraction_STP_discharge_of_river_local,
 		"Fraction_STP_discharge_of_river_cumulated" = Fraction_STP_discharge_of_river_cumulated,
 		"Fraction_STP_discharge_of_river_local_includingSTPdischarge" = Fraction_STP_discharge_of_river_local_includingSTPdischarge,
@@ -304,7 +323,7 @@ wrap_table <- function(
 		"Fraction_of_wastewater_only_C_removal" = Fraction_of_wastewater_only_C_removal,
 		"Fraction_of_wastewater_nitrification" = Fraction_of_wastewater_nitrification,
 		"Fraction_of_wastewater_denitrification" = Fraction_of_wastewater_denitrification,
-		"Fraction_of_wastewater_advanced_treatment" = Fraction_of_wastewater_advanced_treatment
+		"Fraction_of_wastewater_advanced_treatment" = Fraction_of_wastewater_advanced_treatment,
 		"Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge" = Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge,
 		"Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated" = Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated
 	)
@@ -316,6 +335,7 @@ wrap_table <- function(
 		"ID",
 		"inhabitants_cumulated",
 		"STP_local_discharge_L_s",
+		"STP_cumulated_discharge_L_s",
 		"STP_count_cumulated",
 		"Fraction_STP_discharge_of_river_local",
 		"Fraction_STP_discharge_of_river_cumulated",

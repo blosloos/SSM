@@ -2,8 +2,7 @@
 
 
 
-
-
+ 
 
 calc_load <- function(
 	ID,
@@ -24,22 +23,22 @@ calc_load <- function(
 
 	###############################################
 	# check inputs & defaults
-	if(!is.data.frame(compound_elimination_STP)) stop("Problem in wrap_table, argument compound_elimination_STP is not a dataframe.")
-	if(any(!sapply(compound_elimination_STP, is.numeric))) stop("Problem in wrap_table, dataframe compound_elimination_STP has non-numeric entries.")
-	STP_steps <- c("COD_treatment", "nitrification", "denitrification", "P_elimination", "GAC", "combi", "ozonation", "PAC", "Ausbau")
+	if(!is.data.frame(compound_elimination_STP)) stop("Problem in calc_load, argument compound_elimination_STP is not a dataframe.")
+	if(any(!sapply(compound_elimination_STP, is.numeric))) stop("Problem in calc_load, dataframe compound_elimination_STP has non-numeric entries.")
+	STP_steps <- c("COD_treatment", "nitrification", "denitrification", "P_elimination", "GAC", "combi", "ozonation", "PAC", "undefined")
 	not_found <- !(names(compound_elimination_STP) %in% STP_steps)
-	if(any(not_found)) stop(paste0("Problem in wrap_table, argument compound_elimination_STP: entry ", paste(names(compound_elimination_STP)[not_found], collapse = ", "), " is missing."))
+	if(any(not_found)) stop(paste0("Problem in calc_load, argument compound_elimination_STP: entry ", paste(names(compound_elimination_STP)[not_found], collapse = ", "), " is missing."))
 	if(any((compound_elimination_STP < 0) & (compound_elimination_STP > 1))) stop("Problem in calc_load: compound_elimination_STP not within [0,1]")
 	if(!(compound_elimination_method %in% c("micropollutants", "STP individual"))) stop("Problem in calc_load: invalid compound_elimination_method, must be either micropollutants or STP individual.")
 	if((compound_elimination_method == "STP individual") & (STP_elimination[1] == FALSE)) stop("Problem in calc_load: compound_elimination_method set to STP individual, but no STP_elimination provided. Please revise.")
 	if(!identical(length(ID), length(inhabitants))) stop("Problem in calc_load: STP inputs vary in length_1")
-	if(nrow(STP_treatment_steps)) != length(ID)) stop("Problem in calc_load: number of rows for STP_treatment_steps not equal to length of ID") 
+	if(nrow(STP_treatment_steps) != length(ID)) stop("Problem in calc_load: number of rows for STP_treatment_steps not equal to length of ID") 
 	if(length(compound_load_gramm_per_capita_and_day) > 1) stop("Problem in calc_load: compound_load_gramm_per_capita_and_day should consist of one value only")
 	that_not <- which(!(ID_next[!is.na(ID_next)] %in% ID))
 	if(length(that_not)) stop(paste0("Invalid ID_next entry detected: ", paste(ID_next[!is.na(ID_next)][that_not], collapse = ", ")))
 	if(any(is.na(inhabitants))) stop("Problem in calc_load: inhabitants contains NAs")
 	###############################################
-
+ 
 	###############################################	
 	# calculate elimiation rates
 	compound_elimination_STP_calc <- rep(0, nrow(STP_treatment_steps))
@@ -51,9 +50,9 @@ calc_load <- function(
 				if(STP_treatment_steps[i, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$nitrification else compound_elimination_STP$COD_treatment,
 				if(STP_treatment_steps[i, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$denitrification,
 				if(STP_treatment_steps[i, "P_elimination"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$P_elimination,		
-				if(!is.na(STP_treatment_steps[i, "STP_treatment_steps"])){
+				if(!is.na(STP_treatment_steps[i, "type_advanced_treatment"])){
 					compound_elimination_STP[
-						names(compound_elimination_STP) == STP_treatment_steps[i, "STP_treatment_steps"]
+						names(compound_elimination_STP) == STP_treatment_steps[i, "type_advanced_treatment"]
 					][[1]]
 				}else 0
 			))		

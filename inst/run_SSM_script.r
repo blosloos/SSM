@@ -13,10 +13,10 @@ install_github("blosloos/SSM", ref = "main")
 library(SSM)
 
 # Pfad zu ARA-Tabelle setzen & xlsx-Sheet benennen:
-xlsxFile_path <- "C:/Projects/VSA/round_fin/STP_inputs.xlsx"
-sheet_name <- "STP_inputs"
+xlsxFile_path <- "C:/Projects/VSA/round_fin/model_inputs.xlsx"
+sheet_name <- "model_inputs"
 
-STP_table <- openxlsx:::read.xlsx(xlsxFile = xlsxFile_path, sheet = sheet_name, startRow = 3)
+model_input_table <- openxlsx:::read.xlsx(xlsxFile = xlsxFile_path, sheet = sheet_name, startRow = 3)
  
 # Output-Pfad setzen:
 path_out <- "C:/Projects/VSA/round_fin/example_outputs"
@@ -46,7 +46,7 @@ compound_elimination_STP <- data.frame(
 	combi = c(0, 0.05),
 	ozonation = c(0.4, 0.7),
 	PAC = c(0, 0.3),
-	"undefined advanced treatment" = c(0, 0.12)
+	undefined = c(0, 0.12)
 )
 
 compound_elimination_method <- "micropollutants" # "micropollutants", "STP individual"
@@ -72,60 +72,55 @@ add_absolute_load <- TRUE					# additiert absolute Fracht aus Spalte additional_
 ################################################################
 # -> Berechnen, Output-Tabelle in path_out_xlsx ################
 
+
+
 wrap_table(
 
-	STP_table = STP_table,			
-	STP_discharge_per_capita = STP_discharge_per_capita,
-	STP_scenario_year = STP_scenario_year,
-	STP_reroute = STP_reroute,
-	
-	with_lake_elimination = with_lake_elimination,
-	add_absolute_load = add_absolute_load,
-	
+	model_input_table = model_input_table,									
+	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
+	STP_reroute = TRUE,									
+	STP_filter_steps = TRUE,							
+	STP_discharge_per_capita = 400,						
 	compound_name = compound_name,
-	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,	
-	compound_elimination_STP = compound_elimination_STP,
-	compound_elimination_method = compound_elimination_method,
-	
-	use_columns_local_discharge = use_columns_local_discharge,
-	use_columns_local_discharge_for_fractions = use_columns_local_discharge_for_fractions,
+	scenario_name = compound_name,
+	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,				
+	compound_elimination_STP = compound_elimination_STP,					
+	compound_elimination_method = "micropollutants",	
+	with_lake_elimination = TRUE,
+	add_absolute_load = TRUE,
+	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = use_columns_STP_elimination_rate,
-	add_columns_from_STP_table = c("STP_next", "X_position", "Y_position"),
-	
-	path_out = path_out,
-	use_sep_csv = ","
+	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
+	path_out = path_out,									
+	overwrite = TRUE,
+	write_csv = TRUE,									
+	use_sep_csv = " "
 	
 )
 
 
-# for testing (DELETE):
 
-	STP_table <- STP_table
-	STP_discharge_per_capita <- STP_discharge_per_capita
-	STP_scenario_year <- STP_scenario_year
-	STP_reroute <- STP_reroute
-	
-	with_lake_elimination <- with_lake_elimination
-	add_absolute_load <- add_absolute_load
-	
-	compound_name <- compound_name
-	compound_load_gramm_per_capita_and_day <- compound_load_gramm_per_capita_and_day
-	compound_elimination_STP <- compound_elimination_STP
-	compound_elimination_method <- compound_elimination_method
-	
-	use_columns_local_discharge <- use_columns_local_discharge
-	use_columns_local_discharge_for_fractions <- use_columns_local_discharge_for_fractions
-	use_STP_elimination_rate <- use_columns_STP_elimination_rate
-	add_columns_from_STP_table <- c("STP_next", "X_position", "Y_position")
-	
-	path_out <- path_out
-	use_sep_csv <- ","
+	model_input_table = model_input_table									
+	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1])
+	STP_reroute = TRUE
+	STP_filter_steps = TRUE
+	STP_discharge_per_capita = 400
+	compound_name = compound_name
+	scenario_name = compound_name
+	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day
+	compound_elimination_STP = compound_elimination_STP	
+	compound_elimination_method = "micropollutants"
+	with_lake_elimination = FALSE
+	add_absolute_load = FALSE
+	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max")
+	use_STP_elimination_rate = use_columns_STP_elimination_rate
+	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position")
+	path_out = path_out
+	overwrite = TRUE
+	write_csv = TRUE
+	use_sep_csv = " "
 
-	STP_filter_steps <- TRUE								# Filter STP treatment steps until a given STP_scenario_year
 
-	compound_load_total <- FALSE							# [kg / a]
-	
-	overwrite <- TRUE	
 
 
 
