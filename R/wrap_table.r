@@ -4,7 +4,7 @@
 
 wrap_table <- function(
 
-	model_input_table = NULL,									# Must be a data.frame if provided, overwrites all of the below STP_ arguments
+	model_input_table = NULL,							# Must be a data.frame if provided, overwrites all of the below STP_ arguments
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,									# Reroute STPs until a given STP_scenario_year
 	STP_filter_steps = TRUE,							# Filter STP treatment steps until a given STP_scenario_year
@@ -251,7 +251,7 @@ wrap_table <- function(
 		is.na(STP_treatment_steps[, "type_advanced_treatment"])
 	] <- "nitrification"	
 	classed[
-		(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
+		(STP_treatment_steps[, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		is.na(STP_treatment_steps[, "type_advanced_treatment"])
 	] <- "denitrification"		
