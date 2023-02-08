@@ -40,7 +40,7 @@ compound_elimination_STP <- data.frame(
 	COD_treatment = c(0.4, 0.5),
 	nitrification = c(0.3, 0.6),
 	denitrification = c(0.15, 0.2),
-	P_elimination = c(0, 0),
+	P_elimination = c(0.1, 0.2),
 	
 	GAC = c(0, 0.15),
 	combi = c(0, 0.05),
@@ -102,8 +102,8 @@ wrap_table(
 
 	model_input_table = model_input_table									
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1])
-	STP_reroute = TRUE
-	STP_filter_steps = TRUE
+	STP_reroute = FALSE
+	STP_filter_steps = FALSE
 	STP_discharge_per_capita = 400
 	compound_name = compound_name
 	scenario_name = compound_name
