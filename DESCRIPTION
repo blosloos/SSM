@@ -8,3 +8,4 @@ Maintainer: Martin Loos <mloos@envibee.ch>
 Description: Catchment-based micropollutant routing model for (swiss) sewage treatment plants, based on and extending the publication of Ort et al. (ES&T, 2009, 43, pp. 3214-3220)
 License: GNU General Public License v3.0
 Imports: openxlsx
+RoxygenNote: 7.2.1

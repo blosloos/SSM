@@ -94,7 +94,7 @@ wrap_table(
 	path_out = path_out,									
 	overwrite = TRUE,
 	write_csv = TRUE,									
-	use_sep_csv = " "
+	use_sep_csv = ","
 	
 )
 

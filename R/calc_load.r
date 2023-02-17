@@ -1,5 +1,28 @@
-
-
+#' Calculate loads
+#'
+#' @param ID Character vector. Bla.
+#' @param STP_treatment_steps Bla.
+#' @param ID_next Bla.
+#' @param inhabitants Bla.
+#' @param STP_elimination Bla.
+#' @param compound_load_gramm_per_capita_and_day Bla.
+#' @param compound_elimination_STP Bla.
+#' @param compound_elimination_method Bla.
+#' @param with_lake_elimination Bla.
+#' @param lake_eliminination Bla.
+#' @param add_absolute_load Bla.
+#' @param absolute_loads Bla.
+#' @param return_data Bla.
+#'
+#' @returns An integer vector the same length as `x`.
+#'   `NA` strings have `NA` length.
+#'
+#' @seealso [wrap_table()]
+#'
+#' @export Bla.
+#'
+#' @examples Bla.
+#'
 
 
  
