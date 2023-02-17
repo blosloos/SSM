@@ -27,8 +27,8 @@ wrap_table(
 )
 }
 \value{
-An integer vector the same length as `x`.
-  `NA` strings have `NA` length.
+An integer vector the same length as \code{x}.
+\code{NA} strings have \code{NA} length.
 }
 \description{
 asd
@@ -38,5 +38,5 @@ Bla.
 
 }
 \seealso{
-[calc_load()]
+\code{\link[=calc_load]{calc_load()}}
 }

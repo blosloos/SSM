@@ -24,11 +24,11 @@ make_topology(
 \item{only_direct_upstream}{Logical, default FALSE. Return only STPs/lakes directly upstream?}
 }
 \value{
-A matrix with dimensions and column/row names equal to argument ID. Columns contain 1 
+A matrix with dimensions and column/row names equal to argument ID. Columns contain 1
 (or IDs for insert_id_in_topo_matrix) to denote upstream nodes of each STP/lake node, and 0 otherwise.
 }
 \description{
-Calculate a topology matrix to mark all sewage treatment plants (STPs) or lakes (or similar network nodes) upstream 
+Calculate a topology matrix to mark all sewage treatment plants (STPs) or lakes (or similar network nodes) upstream
 of an individual STP/lake in a river network. Using only_direct_upstream, these can either be all nodes upstream, or only those in direct
 upstream adjacency. Mainly to be used in function calc_load().
 }
@@ -38,5 +38,5 @@ ID_next <- c(4, 3, 4, 5, NA) # node with ID = 5 has no downstream node (hence ID
 make_topology(ID, ID_next)
 }
 \seealso{
-{[calc_load()]}
+{\code{\link[=calc_load]{calc_load()}}}
 }

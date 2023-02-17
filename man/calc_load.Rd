@@ -48,14 +48,15 @@ calc_load(
 \item{return_data}{Bla.}
 }
 \value{
-An integer vector the same length as `x`.
-
-* ID: 
-* input_load_local_g_d: 
-* load_local_g_d: 
-* load_cumulated_g_d: 
-* inhabitants_cumulated: 
-* STP_count_cumulated:
+An integer vector the same length as \code{x}.
+\itemize{
+\item ID:
+\item input_load_local_g_d:
+\item load_local_g_d:
+\item load_cumulated_g_d:
+\item inhabitants_cumulated:
+\item STP_count_cumulated:
+}
 }
 \description{
 Calculate loads
@@ -65,5 +66,5 @@ Bla.
 
 }
 \seealso{
-[wrap_table()]
+\code{\link[=wrap_table]{wrap_table()}}
 }
