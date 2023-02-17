@@ -1,9 +1,40 @@
-
+#' Wrapper to calculate loads from pre-defined table input
+#'
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#' @param 
+#'
+#' @description asd
+#'
+#' @returns An integer vector the same length as `x`.
+#'   `NA` strings have `NA` length.
+#'
+#' @seealso [calc_load()]
+#'
+#' @export Bla.
+#'
+#' @examples Bla.
+#'
 
 
 
 wrap_table <- function(
-
 	model_input_table = NULL,							# Must be a data.frame if provided, overwrites all of the below STP_ arguments
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,									# Reroute STPs until a given STP_scenario_year
@@ -23,7 +54,6 @@ wrap_table <- function(
 	overwrite = TRUE,
 	write_csv = TRUE,									# else, exports an excel file
 	use_sep_csv = " "
-	
 ){
 
 	###############################################
