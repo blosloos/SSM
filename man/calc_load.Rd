@@ -49,7 +49,7 @@ Single-row dataframe with elimination fractions \verb{[0, 1]} for the following 
 and with four named columns indicating the following treatment steps:
 \itemize{
 \item nitrification, denitrification and P_elimination: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
-\item type_advanced_treatment: any one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"undefined"}, \code{"undefined"} or \code{"redirection"}, or any other (empty) string for lake nodes.
+\item type_advanced_treatment: one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"redirection"}, or any other (empty) string for lake nodes.
 }}
 
 \item{STP_elimination_rates}{Required for compound_elimination_method \code{"node_specific"}.
@@ -57,7 +57,7 @@ Numeric vector of length equal to ID, containing elimination fractions \verb{[0,
 
 \item{with_lake_elimination}{Logical. Include elimination by lakes? Defaults to TRUE.}
 
-\item{lake_eliminination_rates}{Numeric vector of length equal equal to ID, containing elimination fractions \verb{[0, 1]} for each lake node.
+\item{lake_eliminination_rates}{Numeric vector of length equal equal to ID, containing elimination fractions \verb{[0, 1]} for each lake node. Set elements to NA (or 0) for STPs.
 Set elements to NA (or 0) for STPs. Only used when with_lake_elimination is set to TRUE.}
 
 \item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
@@ -68,7 +68,7 @@ via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
 \item{return_data}{Strings \code{"loads"} (the default) or \code{"matrix"} to return either the calculated loads or the underlying node routing matrix.}
 }
 \value{
-A dataframe with the following named columns:
+Depending on argument \code{return_data}, either the routing matrix (cp. \code{\link[=make_topology]{make_topology()}}) or a dataframe with the following named columns:
 \itemize{
 \item \code{ID}: Node IDs of STPs and lakes
 \item \code{input_load_local_g_d}: compound amount released into each STP \verb{[g / d]}, i.e., inhabitants * compound_load_gramm_per_capita_and_day
@@ -83,7 +83,7 @@ Based on discharge via sewage treatment plantes (STPs) and the elimination rates
 and lakes, this function estimates the locally released and cumulated loads of a compound along a river network.
 }
 \details{
-This function calculates loads for a single compound in several steps.
+This function estimates the aquatic loads of a single compound in a river network consisting of STP and lake nodes in several steps:
 
 Firstly, the local input into each STP is derived from its connected number of inhabitants multiplied by a mean value of consumption for this compound.
 (cp. returned \code{input_load_local_g_d}).
@@ -91,11 +91,12 @@ Firstly, the local input into each STP is derived from its connected number of i
 Secondly, fractions of this amount are either eliminated by a single STP-specific elimination rate (compound_elimination_method = \code{"node_specific"}) or
 based on the treatment steps of each STP in combination with treatment-specific elimination rates of the compound (compound_elimination_method = \code{"compound_specific"}).
 
-The loads thus released from each STP (cp. returned \code{load_local_g_d}) are then cumulated downstream through the river network in a third step (cp. returned \code{load_cumulated_g_d}),
-and with routing absed on input \code{ID_next}.
+The loads thus released from each STP (cp. returned \code{load_local_g_d}) are then cumulated through the river network in a third step (cp. returned \code{load_cumulated_g_d}),
+and with a routing based on \code{ID_next}.
 
 Optionally, and in a fourth stage, these cumulated loads are further degraded in lakes (arguments \code{with_lake_elimination} and \code{lake_eliminination_rates})
-or can receive additional absolut inputs via \verb{arguments add_absolute_load} and \code{absolute_loads}.
+or can receive additional absolut inputs via arguments \code{add_absolute_load} and \code{absolute_loads}.
+For the lake elimination, all loads of upstream STPs are first summed and then reduced by the lake-specific \code{lake_eliminination_rates}.
 
 The \code{"compound_specific"} elimination rates are set as a product, and as far as they are relevant at each STP based on input \code{STP_treatment_steps}.
 If a treatment step is not present at an STP, the concerned entry in \code{compound_elimination_STP} is not multiplied into this product, except for
@@ -105,10 +106,42 @@ the nitrification step. If the latter is absent at an STP, compound_elimination_
 There is no explicit indication as to whether an entry in vector ID represents an STP or a lake or something else.
 Thus, the user has to take care (depending on function arguments compound_elimination_method and with_lake_elimination) that no entries other
 than \code{"none"} or NA exist for lakes in inputs STP_treatment_steps or STP_elimination_rates, respectively;
-and in turn as NAs in input lake_eliminination_rates for the STP nodes.
+and in turn no others than NAs in input lake_eliminination_rates for the STP nodes.
 }
 \examples{
-Bla.
+
+ID <- c(1, 2, 3, 4, 5)								# nodes: STP, STP, STP, lake, STP
+ID_next <- c(4, 3, 4, 5, NA) 						# node with ID = 5 has no downstream node (hence ID_next = NA)
+inhabitants <- c(403, 150, 324, NA, 172)				# all excertion is cleaned in STPs, none hoes into the lake
+compound_load_gramm_per_capita_and_day <- 100 * 1E-6
+compound_elimination_method <- "compound_specific"
+
+compound_elimination_STP <- data.frame(
+	COD_treatment = 0.5, nitrification = 0.6,
+	denitrification = 0.2, P_elimination = 0.2,
+	GAC = 0, combi = 0.05, ozonation = 0.7,
+	PAC = 0.3, undefined = 0.12
+)
+
+STP_treatment_steps <- cbind(							# define presence of treatment steps
+	"nitrification" = c(),
+	"denitrification" = c(), 
+	"P_elimination" = c(),
+	"type_advanced_treatment" = c()
+)
+
+lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
+
+calc_load(
+ID, ID_next, inhabitants,	
+compound_load_gramm_per_capita_and_day,		
+compound_elimination_method,
+compound_elimination_STP = NULL,
+STP_treatment_steps = NULL,
+with_lake_elimination = TRUE, 
+lake_eliminination_rates
+)
+
 
 }
 \seealso{
