@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_topology.r
 \name{make_topology}
 \alias{make_topology}
-\title{Calculate topology matrix for STP and lake nodes in a river network.}
+\title{Calculate relational topology matrix for STP and lake nodes in a river network.}
 \usage{
 make_topology(
   ID = FALSE,
@@ -13,9 +13,9 @@ make_topology(
 )
 }
 \arguments{
-\item{ID}{Character or integer vector containing IDs of nodes.}
+\item{ID}{Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.}
 
-\item{ID_next}{Character or integer  vector of length equal to ID, containing the ID of the next node directly downstream of each node (if any, else set entry to NA).}
+\item{ID_next}{Character or integer vector of length equal to ID, containing the ID of the next node directly downstream of each node (if any, else set entry to NA).}
 
 \item{NA_next_ignore}{Logical. Set entries in vector ID_next which are not found in vector ID to NA? Else, throw an error (the default, FALSE).}
 
@@ -28,7 +28,7 @@ A matrix with dimensions and column/row names equal to argument ID. Columns cont
 (or IDs for insert_id_in_topo_matrix) to denote upstream nodes of each STP/lake node, and 0 otherwise.
 }
 \description{
-Calculate a topology matrix to mark all sewage treatment plants (STPs) or lakes (or similar network nodes) upstream
+Calculates a topology matrix to mark all sewage treatment plants (STPs) or lakes (or similar network nodes) upstream
 of an individual STP/lake in a river network. Using only_direct_upstream, these can either be all nodes upstream, or only those in direct
 upstream adjacency. Mainly to be used in function calc_load().
 }

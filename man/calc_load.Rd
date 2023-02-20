@@ -2,64 +2,110 @@
 % Please edit documentation in R/calc_load.r
 \name{calc_load}
 \alias{calc_load}
-\title{Calculate loads}
+\title{Calculate local and cumulated loads of a compound in a river network}
 \usage{
 calc_load(
   ID,
-  STP_treatment_steps,
   ID_next,
   inhabitants,
-  STP_elimination = FALSE,
-  compound_load_gramm_per_capita_and_day = NULL,
+  compound_load_gramm_per_capita_and_day,
+  compound_elimination_method = "compound_specific",
   compound_elimination_STP = NULL,
-  compound_elimination_method = "micropollutants",
-  with_lake_elimination = FALSE,
-  lake_eliminination = NULL,
+  STP_treatment_steps = NULL,
+  STP_elimination_rates = FALSE,
+  with_lake_elimination = TRUE,
+  lake_eliminination_rates = NULL,
   add_absolute_load = FALSE,
   absolute_loads = FALSE,
   return_data = "loads"
 )
 }
 \arguments{
-\item{ID}{Character vector. Bla.}
+\item{ID}{Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.}
 
-\item{STP_treatment_steps}{Bla.}
+\item{ID_next}{Character or integer vector of length equal to ID, containing the ID of the next node directly downstream of each node (if any, else set entry to NA).}
 
-\item{ID_next}{Bla.}
+\item{inhabitants}{Integer vector of length equal to ID. Number of inhabitants which are treated by an individual STP node (0 or NA for lakes).}
 
-\item{inhabitants}{Bla.}
+\item{compound_load_gramm_per_capita_and_day}{Single numeric value. Amount of the compound excreted per person and day \verb{[g / d]}.}
 
-\item{STP_elimination}{Bla.}
+\item{compound_elimination_method}{Strings \code{"compound_specific"} (the default) or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
 
-\item{compound_load_gramm_per_capita_and_day}{Bla.}
+\item{compound_elimination_STP}{Required for compound_elimination_method \code{"compound_specific"}.
+Single-row dataframe with elimination fractions \verb{[0, 1]} for the following STP treatment steps aka column names:
+\itemize{
+\item COD_treatment
+\item nitrification
+\item denitrification
+\item P_elimination
+\item GAC
+\item combi
+\item ozonation
+\item PAC
+\item undefined
+}}
 
-\item{compound_elimination_STP}{Bla.}
+\item{STP_treatment_steps}{Required for compound_elimination_method \code{"compound_specific"}. A dataframe of strings with number of rows equal to length of vector ID,
+and with four named columns indicating the following treatment steps:
+\itemize{
+\item nitrification, denitrification and P_elimination: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
+\item type_advanced_treatment: any one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"undefined"}, \code{"undefined"} or \code{"redirection"}, or any other (empty) string for lake nodes.
+}}
 
-\item{compound_elimination_method}{Bla.}
+\item{STP_elimination_rates}{Required for compound_elimination_method \code{"node_specific"}.
+Numeric vector of length equal to ID, containing elimination fractions \verb{[0, 1]} for each STP node. Set elements to NA (or 0) for lakes.}
 
-\item{with_lake_elimination}{Bla.}
+\item{with_lake_elimination}{Logical. Include elimination by lakes? Defaults to TRUE.}
 
-\item{lake_eliminination}{Bla.}
+\item{lake_eliminination_rates}{Numeric vector of length equal equal to ID, containing elimination fractions \verb{[0, 1]} for each lake node.
+Set elements to NA (or 0) for STPs. Only used when with_lake_elimination is set to TRUE.}
 
-\item{add_absolute_load}{Bla.}
+\item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
+via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
 
-\item{absolute_loads}{Bla.}
+\item{absolute_loads}{Numeric vector of length equal to ID with absolute loads to be added \verb{[g / d]}. Used if add_absolute_load set to TRUE.}
 
-\item{return_data}{Bla.}
+\item{return_data}{Strings \code{"loads"} (the default) or \code{"matrix"} to return either the calculated loads or the underlying node routing matrix.}
 }
 \value{
-An integer vector the same length as \code{x}.
+A dataframe with the following named columns:
 \itemize{
-\item ID:
-\item input_load_local_g_d:
-\item load_local_g_d:
-\item load_cumulated_g_d:
-\item inhabitants_cumulated:
-\item STP_count_cumulated:
+\item \code{ID}: Node IDs of STPs and lakes
+\item \code{input_load_local_g_d}: compound amount released into each STP \verb{[g / d]}, i.e., inhabitants * compound_load_gramm_per_capita_and_day
+\item \code{load_local_g_d}: compound amount discharged from each STP after elimination \verb{[g / d]}
+\item \code{load_cumulated_g_d}: cumulated compound amount just downstream of each STP or lake \verb{[g / d]}
+\item \code{inhabitants_cumulated}: cumulated number of inhabitants just downstream of each STP or lake
+\item \code{STP_count_cumulated}: cumulated number of STPs just downstream of each STP or lake
 }
 }
 \description{
-Calculate loads
+Based on discharge via sewage treatment plantes (STPs) and the elimination rates in STPs
+and lakes, this function estimates the locally released and cumulated loads of a compound along a river network.
+}
+\details{
+This function calculates loads for a single compound in several steps.
+
+Firstly, the local input into each STP is derived from its connected number of inhabitants multiplied by a mean value of consumption for this compound.
+(cp. returned \code{input_load_local_g_d}).
+
+Secondly, fractions of this amount are either eliminated by a single STP-specific elimination rate (compound_elimination_method = \code{"node_specific"}) or
+based on the treatment steps of each STP in combination with treatment-specific elimination rates of the compound (compound_elimination_method = \code{"compound_specific"}).
+
+The loads thus released from each STP (cp. returned \code{load_local_g_d}) are then cumulated downstream through the river network in a third step (cp. returned \code{load_cumulated_g_d}),
+and with routing absed on input \code{ID_next}.
+
+Optionally, and in a fourth stage, these cumulated loads are further degraded in lakes (arguments \code{with_lake_elimination} and \code{lake_eliminination_rates})
+or can receive additional absolut inputs via \verb{arguments add_absolute_load} and \code{absolute_loads}.
+
+The \code{"compound_specific"} elimination rates are set as a product, and as far as they are relevant at each STP based on input \code{STP_treatment_steps}.
+If a treatment step is not present at an STP, the concerned entry in \code{compound_elimination_STP} is not multiplied into this product, except for
+the nitrification step. If the latter is absent at an STP, compound_elimination_STP$COD_treatment is used as a factor instead.
+}
+\note{
+There is no explicit indication as to whether an entry in vector ID represents an STP or a lake or something else.
+Thus, the user has to take care (depending on function arguments compound_elimination_method and with_lake_elimination) that no entries other
+than \code{"none"} or NA exist for lakes in inputs STP_treatment_steps or STP_elimination_rates, respectively;
+and in turn as NAs in input lake_eliminination_rates for the STP nodes.
 }
 \examples{
 Bla.

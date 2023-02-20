@@ -2,10 +2,10 @@
 % Please edit documentation in R/wrap_table.r
 \name{wrap_table}
 \alias{wrap_table}
-\title{Wrapper to calculate loads from pre-defined table input}
+\title{Wrapper to calculate minimum and maximum loads and concentrations from a pre-defined table input}
 \usage{
 wrap_table(
-  model_input_table = NULL,
+  model_input_table,
   STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
   STP_reroute = TRUE,
   STP_filter_steps = TRUE,
@@ -13,25 +13,71 @@ wrap_table(
   compound_name = "not_specified",
   scenario_name = compound_name,
   compound_load_gramm_per_capita_and_day,
+  compound_elimination_method = "compound_specific",
   compound_elimination_STP = NULL,
-  compound_elimination_method = "micropollutants",
   with_lake_elimination = FALSE,
   add_absolute_load = FALSE,
   use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
   use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
   add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
-  path_out = FALSE,
+  path_out = NULL,
   overwrite = TRUE,
   write_csv = TRUE,
-  use_sep_csv = " "
+  use_sep_csv = ","
 )
 }
+\arguments{
+\item{model_input_table}{dataframe}
+
+\item{STP_scenario_year}{4-digit integer value for the scenario year. Defaults to the current year.}
+
+\item{STP_reroute}{Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.}
+
+\item{STP_filter_steps}{Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.}
+
+\item{STP_discharge_per_capita}{Single numeric value. Discharge per person and day \link{l / d}.}
+
+\item{compound_load_gramm_per_capita_and_day}{Single numeric value. Amount of the compound excreted per person and day \verb{[g / d]}.}
+
+\item{compound_elimination_method}{Strings \code{"compound_specific"} (the default) or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
+
+\item{compound_elimination_STP}{Required for compound_elimination_method \code{"compound_specific"}.
+Single-row dataframe with elimination fractions \verb{[0, 1]} for the following STP treatment steps aka column names:
+\itemize{
+\item COD_treatment
+\item nitrification
+\item denitrification
+\item P_elimination
+\item GAC
+\item combi
+\item ozonation
+\item PAC
+\item undefined
+}}
+
+\item{with_lake_elimination}{Logical. Include elimination by lakes? Defaults to TRUE.}
+
+\item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
+via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
+
+\item{path_out}{NULL (default) or string containing path for writing csv or Excel.}
+
+\item{overwrite}{Logical, used if path_out is not NULL. Overwrite any existing file? Defaults to TRUE.}
+
+\item{write_csv}{Logical, used if path_out is not NULL. Default to TRUE, else exports an Excel file.}
+
+\item{use_sep_csv}{String for csv sperataror, used if path_out is not NULL.}
+}
 \value{
-An integer vector the same length as \code{x}.
-\code{NA} strings have \code{NA} length.
+A dataframe or two file outputs to
+. One with the following columns:
+
+In case of the file output, the first rows also contain
 }
 \description{
-asd
+model_input_table if provided, overwrites the following STP_arguments
+path_out
+add_absolute_load
 }
 \examples{
 Bla.

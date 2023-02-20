@@ -1,29 +1,45 @@
-#' Wrapper to calculate loads from pre-defined table input
+#' Wrapper to calculate minimum and maximum loads and concentrations from a pre-defined table input
 #'
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
-#' @param 
+#' @inheritParams calc_load
+#' @param model_input_table dataframe
+#' @param STP_scenario_year 4-digit integer value for the scenario year. Defaults to the current year.
+#' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
+#' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
+#' @param STP_discharge_per_capita Single numeric value. Discharge per person and day [l / d]. 
+#' @param compound_name
+#' @param scenario_name
+#' @param add_absolute_load
+#' @param use_columns_local_discharge
+#' @param use_STP_elimination_rate
+#' @param add_columns_from_model_input_table
+#' @param path_out NULL (default) or string containing path for writing csv or Excel. 
+#' @param overwrite Logical, used if path_out is not NULL. Overwrite any existing file? Defaults to TRUE.
+#' @param write_csv Logical, used if path_out is not NULL. Default to TRUE, else exports an Excel file. 
+#' @param use_sep_csv String for csv sperataror, used if path_out is not NULL. 
 #'
-#' @description asd
+#' @description 
+#' 
+#' 
+#' model_input_table if provided, overwrites the following STP_arguments 
+#' path_out
+#' add_absolute_load
 #'
-#' @returns An integer vector the same length as `x`.
-#'   `NA` strings have `NA` length.
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#' @returns A dataframe or two file outputs to
+#' . One with the following columns:
+#' 
+#'
+#'
+#'
+#'
+#'
+#' In case of the file output, the first rows also contain 
 #'
 #' @seealso [calc_load()]
 #'
@@ -35,25 +51,25 @@
 
 
 wrap_table <- function(
-	model_input_table = NULL,							# Must be a data.frame if provided, overwrites all of the below STP_ arguments
+	model_input_table,
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
-	STP_reroute = TRUE,									# Reroute STPs until a given STP_scenario_year
-	STP_filter_steps = TRUE,							# Filter STP treatment steps until a given STP_scenario_year
-	STP_discharge_per_capita = 400,						# [l / d]
+	STP_reroute = TRUE,
+	STP_filter_steps = TRUE,
+	STP_discharge_per_capita = 400,
 	compound_name = "not_specified",
 	scenario_name = compound_name,
-	compound_load_gramm_per_capita_and_day,				# [g / d], set to FALSE to ignore
-	compound_elimination_STP = NULL,					# named dataframe or vector with elimination fractions over treatment steps (not percentage values); set to 0 to skip a step 
-	compound_elimination_method = "micropollutants",	# "micropollutants" or "STP individual"
+	compound_load_gramm_per_capita_and_day,
+	compound_elimination_method = "compound_specific",
+	compound_elimination_STP = NULL,
 	with_lake_elimination = FALSE,
 	add_absolute_load = FALSE,
 	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
 	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
-	path_out = FALSE,									# if FALSE, return data.frame
+	path_out = NULL,
 	overwrite = TRUE,
-	write_csv = TRUE,									# else, exports an excel file
-	use_sep_csv = " "
+	write_csv = TRUE,
+	use_sep_csv = ","
 ){
 
 	###############################################
@@ -71,7 +87,7 @@ wrap_table <- function(
 		if(any(model_input_table[, use_columns_local_discharge[1]] > model_input_table[, use_columns_local_discharge[2]], na.rm = TRUE)) stop("use_columns_local_discharge set incorrectly for range calculation")	
 	}
 	use_columns_local_discharge_for_fractions <- use_columns_local_discharge[1]
-	if((compound_elimination_method == "STP individual") & (use_STP_elimination_rate[1] == FALSE)) stop("compound_elimination_method set to STP individual, but no STP columns for use_STP_elimination_rate defined. Please revise.")
+	if((compound_elimination_method == "node_specific") & (use_STP_elimination_rate[1] == FALSE)) stop("compound_elimination_method set to node_specific, but no STP columns for use_STP_elimination_rate defined. Please revise.")
 	if(!is.numeric(as.numeric(STP_scenario_year))) stop("STP_scenario_year not set correctly, please revise.")
 	if(!is.null(model_input_table) & !is.data.frame(model_input_table)) stop("model_input_table must be either NULL or a dataframe")
 	if(with_lake_elimination){
@@ -147,9 +163,9 @@ wrap_table <- function(
 		)
 	}
 	STP_treatment_steps <- model_input_table[, c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"), drop = FALSE]
-	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
-	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
-	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE"))) stop("STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
 	STP_treatment_steps[is.na(STP_treatment_steps[, "nitrification"]), "nitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "denitrification"]), "denitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "P_elimination"]), "P_elimination"] <- "No"
@@ -169,7 +185,7 @@ wrap_table <- function(
 			"nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment",
 			"redirecting_STP_target_STP_ID", use_columns_local_discharge_loop, "lake_elimination_min", "lake_elimination_max"
 		)
-		if(compound_elimination_method == "STP individual"){
+		if(compound_elimination_method == "node_specific"){
 			cols_required <- c(cols_required, use_STP_elimination_rate[n])
 			use_columns_STP_elimination_rate_loop <- use_STP_elimination_rate[n]	
 		}
@@ -178,7 +194,7 @@ wrap_table <- function(
 			stop(paste0("model_input_table is missing these columns: ", these_missing))
 		}
 		STP_local_discharge_river_loop <- as.numeric(model_input_table[, use_columns_local_discharge_loop])
-		if(compound_elimination_method == "STP individual"){
+		if(compound_elimination_method == "node_specific"){
 			use_STP_elimination_loop <- as.numeric(model_input_table[, use_columns_STP_elimination_rate_loop])
 		}else use_STP_elimination_loop <- FALSE
 		compound_load_gramm_per_capita_and_day_loop <- compound_load_gramm_per_capita_and_day[n]
@@ -194,12 +210,12 @@ wrap_table <- function(
 			STP_treatment_steps = STP_treatment_steps,
 			ID_next = model_input_table$ID_next,
 			inhabitants = inhabitants,
-			STP_elimination = use_STP_elimination_loop,
+			STP_elimination_rates = use_STP_elimination_loop,
 			compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day_loop,
 			compound_elimination_STP = compound_elimination_STP_loop,
 			compound_elimination_method = compound_elimination_method,
 			with_lake_elimination = with_lake_elimination,
-			lake_eliminination = lake_eliminination_loop,
+			lake_eliminination_rates = lake_eliminination_loop,
 			add_absolute_load = add_absolute_load,
 			absolute_loads = absolute_loads_loop
 		)
@@ -389,7 +405,7 @@ wrap_table <- function(
 		"conc_cumulated_ug_L_min"			
 	), drop = FALSE]	
 	
-	if(is.logical(path_out)) return(result_table) else{
+	if(is.null(path_out)) return(result_table) else{
 		if(file.exists(file.path(path_out, paste0(scenario_name, ".csv"))) & !overwrite) stop("File at path_out already exists, and overwrite is set to FALSE")
 		
 		# append infos to result_table

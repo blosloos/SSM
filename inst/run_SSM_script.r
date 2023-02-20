@@ -41,7 +41,6 @@ compound_elimination_STP <- data.frame(
 	nitrification = c(0.3, 0.6),
 	denitrification = c(0.15, 0.2),
 	P_elimination = c(0.1, 0.2),
-	
 	GAC = c(0, 0.15),
 	combi = c(0, 0.05),
 	ozonation = c(0.4, 0.7),
@@ -49,7 +48,7 @@ compound_elimination_STP <- data.frame(
 	undefined = c(0, 0.12)
 )
 
-compound_elimination_method <- "micropollutants" # "micropollutants", "STP individual"
+compound_elimination_method <- "compound_specific" # "compound_specific", "node_specific"
 
 
 # Welche Spalten beinhalten den Abfluss, kleinerer und grösserer Wert? 
