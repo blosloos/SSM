@@ -9,7 +9,7 @@ calc_load(
   ID_next,
   inhabitants,
   compound_load_gramm_per_capita_and_day,
-  compound_elimination_method = "compound_specific",
+  compound_elimination_method = NULL,
   compound_elimination_STP = NULL,
   STP_treatment_steps = NULL,
   STP_elimination_rates = FALSE,
@@ -29,7 +29,7 @@ calc_load(
 
 \item{compound_load_gramm_per_capita_and_day}{Single numeric value. Amount of the compound excreted per person and day \verb{[g / d]}.}
 
-\item{compound_elimination_method}{Strings \code{"compound_specific"} (the default) or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
+\item{compound_elimination_method}{Strings \code{"compound_specific"} or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
 
 \item{compound_elimination_STP}{Required for compound_elimination_method \code{"compound_specific"}.
 Single-row dataframe with elimination fractions \verb{[0, 1]} for the following STP treatment steps aka column names:
@@ -49,7 +49,7 @@ Single-row dataframe with elimination fractions \verb{[0, 1]} for the following 
 and with four named columns indicating the following treatment steps:
 \itemize{
 \item nitrification, denitrification and P_elimination: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
-\item type_advanced_treatment: one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"redirection"}, or any other (empty) string for lake nodes.
+\item type_advanced_treatment: one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, or any other (empty) string for lack of treatment or lake nodes.
 }}
 
 \item{STP_elimination_rates}{Required for compound_elimination_method \code{"node_specific"}.
@@ -110,11 +110,10 @@ and in turn no others than NAs in input lake_eliminination_rates for the STP nod
 }
 \examples{
 
-ID <- c(1, 2, 3, 4, 5)								# nodes: STP, STP, STP, lake, STP
-ID_next <- c(4, 3, 4, 5, NA) 						# node with ID = 5 has no downstream node (hence ID_next = NA)
-inhabitants <- c(403, 150, 324, NA, 172)				# all excertion is cleaned in STPs, none hoes into the lake
+ID <- c(1, 2, 3, 4, 5)	# nodes: STP, STP, STP, lake, STP
+ID_next <- c(4, 3, 4, 5, NA)	# node with ID = 5 has no downstream node (hence ID_next = NA)
+inhabitants <- c(403, 150, 324, NA, 172)	# all excertion is cleaned in STPs, none hoes into the lake
 compound_load_gramm_per_capita_and_day <- 100 * 1E-6
-compound_elimination_method <- "compound_specific"
 
 compound_elimination_STP <- data.frame(
 	COD_treatment = 0.5, nitrification = 0.6,
@@ -123,11 +122,11 @@ compound_elimination_STP <- data.frame(
 	PAC = 0.3, undefined = 0.12
 )
 
-STP_treatment_steps <- cbind(							# define presence of treatment steps
-	"nitrification" = c(),
-	"denitrification" = c(), 
-	"P_elimination" = c(),
-	"type_advanced_treatment" = c()
+STP_treatment_steps <- cbind(	# define presence of treatment steps
+	"nitrification" = c("TRUE", "TRUE", "FALSE", "none", "TRUE"),
+	"denitrification" = c("TRUE", "FALSE", "FALSE", "none", "TRUE"), 
+	"P_elimination" = c("TRUE", "TRUE", "TRUE", "none", "TRUE"),
+	"type_advanced_treatment" = c("GAC", "", "", "", "ozonation")
 )
 
 lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
@@ -135,9 +134,9 @@ lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA other
 calc_load(
 ID, ID_next, inhabitants,	
 compound_load_gramm_per_capita_and_day,		
-compound_elimination_method,
-compound_elimination_STP = NULL,
-STP_treatment_steps = NULL,
+compound_elimination_method = "compound_specific",
+compound_elimination_STP,
+STP_treatment_steps,
 with_lake_elimination = TRUE, 
 lake_eliminination_rates
 )

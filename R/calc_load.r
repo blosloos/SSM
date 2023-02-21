@@ -3,7 +3,7 @@
 #' @inheritParams make_topology
 #' @param inhabitants Integer vector of length equal to ID. Number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
 #' @param compound_load_gramm_per_capita_and_day Single numeric value. Amount of the compound excreted per person and day `[g / d]`.
-#' @param compound_elimination_method Strings `"compound_specific"` (the default) or `"node_specific"` on how to calculate compound elimination, cp. Details.
+#' @param compound_elimination_method Strings `"compound_specific"` or `"node_specific"` on how to calculate compound elimination, cp. Details.
 #' @param compound_elimination_STP Required for compound_elimination_method `"compound_specific"`. 
 #' Single-row dataframe with elimination fractions `[0, 1]` for the following STP treatment steps aka column names:
 #'* COD_treatment
@@ -19,7 +19,7 @@
 #' @param STP_treatment_steps Required for compound_elimination_method `"compound_specific"`. A dataframe of strings with number of rows equal to length of vector ID,
 #' and with four named columns indicating the following treatment steps:
 #'* nitrification, denitrification and P_elimination: `"TRUE"` or `"FALSE"` for STP nodes, and `"none"` for lakes or similar.
-#'* type_advanced_treatment: one of `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"redirection"`, or any other (empty) string for lake nodes.
+#'* type_advanced_treatment: one of `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`, or any other (empty) string for lack of treatment or lake nodes.
 #'
 #' @param STP_elimination_rates Required for compound_elimination_method `"node_specific"`. 
 #' Numeric vector of length equal to ID, containing elimination fractions `[0, 1]` for each STP node. Set elements to NA (or 0) for lakes.
@@ -42,7 +42,7 @@
 #'* `load_local_g_d`: compound amount discharged from each STP after elimination `[g / d]`
 #'* `load_cumulated_g_d`: cumulated compound amount just downstream of each STP or lake `[g / d]`
 #'* `inhabitants_cumulated`: cumulated number of inhabitants just downstream of each STP or lake
-#'* `STP_count_cumulated`: cumulated number of STPs just downstream of each STP or lake
+#'* `node_count_cumulated`: cumulated number of nodes upstream of a each STP or lake node 
 #'
 #'
 #' @details This function estimates the aquatic loads of a single compound in a river network consisting of STP and lake nodes in several steps: 
@@ -79,7 +79,6 @@
 #' ID_next <- c(4, 3, 4, 5, NA)	# node with ID = 5 has no downstream node (hence ID_next = NA)
 #' inhabitants <- c(403, 150, 324, NA, 172)	# all excertion is cleaned in STPs, none hoes into the lake
 #' compound_load_gramm_per_capita_and_day <- 100 * 1E-6
-#' compound_elimination_method <- "compound_specific"
 #' 
 #' compound_elimination_STP <- data.frame(
 #' 	COD_treatment = 0.5, nitrification = 0.6,
@@ -89,10 +88,10 @@
 #' )
 #' 
 #' STP_treatment_steps <- cbind(	# define presence of treatment steps
-#' 	"nitrification" = c(),
-#' 	"denitrification" = c(), 
-#' 	"P_elimination" = c(),
-#' 	"type_advanced_treatment" = c()
+#' 	"nitrification" = c("TRUE", "TRUE", "FALSE", "none", "TRUE"),
+#' 	"denitrification" = c("TRUE", "FALSE", "FALSE", "none", "TRUE"), 
+#' 	"P_elimination" = c("TRUE", "TRUE", "TRUE", "none", "TRUE"),
+#' 	"type_advanced_treatment" = c("GAC", "", "", "", "ozonation")
 #' )
 #' 
 #' lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
@@ -100,9 +99,9 @@
 #'calc_load(
 #'	ID, ID_next, inhabitants,	
 #'	compound_load_gramm_per_capita_and_day,		
-#'	compound_elimination_method,
-#'	compound_elimination_STP = NULL,
-#'	STP_treatment_steps = NULL,
+#'	compound_elimination_method = "compound_specific",
+#'	compound_elimination_STP,
+#'	STP_treatment_steps,
 #'	with_lake_elimination = TRUE, 
 #'	lake_eliminination_rates
 #')
@@ -114,7 +113,7 @@ calc_load <- function(
 	ID_next,
 	inhabitants,	
 	compound_load_gramm_per_capita_and_day,		
-	compound_elimination_method = "compound_specific",
+	compound_elimination_method = NULL,
 	compound_elimination_STP = NULL,
 	STP_treatment_steps = NULL,
 	STP_elimination_rates = FALSE,
@@ -134,8 +133,8 @@ calc_load <- function(
 	if(any(is.na(inhabitants))) inhabitants[is.na(inhabitants)] <- 0
 	if(!is.data.frame(compound_elimination_STP)) stop("Problem in calc_load, argument compound_elimination_STP is not a dataframe.")
 	if(any(!sapply(compound_elimination_STP, is.numeric))) stop("Problem in calc_load, dataframe compound_elimination_STP has non-numeric entries.")
-	STP_steps <- c("COD_treatment", "nitrification", "denitrification", "P_elimination", "GAC", "combi", "ozonation", "PAC", "undefined")
-	not_found <- !(names(compound_elimination_STP) %in% STP_steps)
+	STP_steps_all <- c("COD_treatment", "nitrification", "denitrification", "P_elimination", "GAC", "combi", "ozonation", "PAC", "undefined")
+	not_found <- !(names(compound_elimination_STP) %in% STP_steps_all)
 	if(any(not_found)) stop(paste0("Problem in calc_load, argument compound_elimination_STP: entry ", paste(names(compound_elimination_STP)[not_found], collapse = ", "), " is missing."))
 	if(any((compound_elimination_STP < 0) & (compound_elimination_STP > 1))) stop("Problem in calc_load: compound_elimination_STP not within [0,1]")
 	if(!(compound_elimination_method %in% c("compound_specific", "node_specific"))) stop("Problem in calc_load: invalid compound_elimination_method, must be either compound_specific or STP individual.")
@@ -159,6 +158,7 @@ calc_load <- function(
 	###############################################	
 	# calculate elimiation rates
 	compound_elimination_STP_calc <- rep(0, length(ID))
+	STP_steps_advanced <- c("GAC", "combi", "ozonation", "PAC", "undefined")
 	for(i in 1:length(ID)){
 
 		#######################################
@@ -173,7 +173,7 @@ calc_load <- function(
 					if(STP_treatment_steps[i, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$nitrification else compound_elimination_STP$COD_treatment,
 					if(STP_treatment_steps[i, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$denitrification,
 					if(STP_treatment_steps[i, "P_elimination"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$P_elimination,		
-					if(!is.na(STP_treatment_steps[i, "type_advanced_treatment"])){
+					if(STP_treatment_steps[i, "type_advanced_treatment"] %in% STP_steps_advanced){
 						compound_elimination_STP[
 							names(compound_elimination_STP) == STP_treatment_steps[i, "type_advanced_treatment"]
 						][[1]]
@@ -214,10 +214,7 @@ calc_load <- function(
 	do_calc_node <- rep(TRUE, length(ID))
 	topo_matrix <- matrix(nrow = length(ID), ncol = length(ID), 0)
 	colnames(topo_matrix) <- rownames(topo_matrix) <- ID
-	while(
-		any(do_calc_node) &
-		not_loop_endless < 1E5
-	){		
+	while(any(do_calc_node)){		
 		
 		for(k in 1:length(ID)){ # check through STPs / lakes
 			# (1) still required to be calculated?
@@ -239,10 +236,12 @@ calc_load <- function(
 			do_calc_node[k] <- FALSE
 		
 		}
+		
 		not_loop_endless <- not_loop_endless + 1
-			
+		if(not_loop_endless >= 1E5) stop("Problem in calc_load: load routing through STP and lake network did not finish within a 1E5 
+			iterations. Check ID_next for circular node routing?") 
+
 	}
-	if(not_loop_endless >= 1E5) stop("Problem in calc_load: load routing through STP and lake network did not finish within expected number of iterations (check ID_next for circular pointing).") 
 	###############################################
 	
 	###############################################
@@ -256,16 +255,15 @@ calc_load <- function(
 	###############################################	
 	# return loads
 	inhabitants_cumulated <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y)}, y = inhabitants)
-	STP_count_cumulated <- apply(topo_matrix, MARGIN = 2, function(x){sum(x) - 1 })
+	node_count_cumulated <- apply(topo_matrix, MARGIN = 2, function(x){sum(x) - 1})
 	result <- data.frame(
 		ID, 
-		as.numeric(input_load_local_g_d),
-		as.numeric(load_local_g_d), 
-		as.numeric(load_cumulated_g_d), 
-		as.numeric(inhabitants_cumulated), 
-		as.numeric(STP_count_cumulated), 
+		input_load_local_g_d = as.numeric(input_load_local_g_d),
+		load_local_g_d = as.numeric(load_local_g_d), 
+		load_cumulated_g_d = as.numeric(load_cumulated_g_d), 
+		inhabitants_cumulated = as.numeric(inhabitants_cumulated), 
+		node_count_cumulated = as.numeric(node_count_cumulated), 
 		row.names = NULL)
-	names(result) <- c("ID", "input_load_local_g_d", "load_local_g_d", "load_cumulated_g_d", "inhabitants_cumulated", "STP_count_cumulated")
 	return(result)
 	###############################################
 	

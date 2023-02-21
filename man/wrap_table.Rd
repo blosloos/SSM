@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrap_table.r
 \name{wrap_table}
 \alias{wrap_table}
-\title{Wrapper to calculate minimum and maximum loads and concentrations from a pre-defined table input}
+\title{Wrapper to calculate minimum and maximum loads and concentrations from an table input and using \code{\link[=calc_load]{calc_load()}}}
 \usage{
 wrap_table(
   model_input_table,
@@ -39,7 +39,7 @@ wrap_table(
 
 \item{compound_load_gramm_per_capita_and_day}{Single numeric value. Amount of the compound excreted per person and day \verb{[g / d]}.}
 
-\item{compound_elimination_method}{Strings \code{"compound_specific"} (the default) or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
+\item{compound_elimination_method}{Strings \code{"compound_specific"} or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
 
 \item{compound_elimination_STP}{Required for compound_elimination_method \code{"compound_specific"}.
 Single-row dataframe with elimination fractions \verb{[0, 1]} for the following STP treatment steps aka column names:

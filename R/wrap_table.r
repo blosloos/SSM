@@ -1,4 +1,4 @@
-#' Wrapper to calculate minimum and maximum loads and concentrations from a pre-defined table input
+#' Wrapper to calculate minimum and maximum loads and concentrations from an table input and using [calc_load()]
 #'
 #' @inheritParams calc_load
 #' @param model_input_table dataframe
