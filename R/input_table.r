@@ -11,7 +11,7 @@
 #'* `ID`: unique IDs (numbers or characters) of river network nodes such as STPs and lakes.
 #'* `inhabitants`: number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
 #'* `ID_next`: the ID of the next node directly downstream of each node (if any, else set entry to NA).
-#'* columns `Q347_L_s_min` and `Q347_L_s_max`: minimum and maximum discharge just downstream of each STP or lake `[l / s]`.
+#'* columns `Q347_L_s_min` and `Q347_L_s_max`: minimum and maximum discharge just downstream of each STP or a lake outlet `[l / s]`.
 #'
 #' The following columns are required if `compound_elimination_method` in [wrap_table()] is set to `"compound_specific"`:
 #'* columns `nitrification`, `denitrification` and `P_elimination`: `"TRUE"` or `"FALSE"` for STP nodes, and `"none"` for lakes or similar.
