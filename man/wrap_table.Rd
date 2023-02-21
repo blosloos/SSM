@@ -13,7 +13,7 @@ wrap_table(
   compound_name = "not_specified",
   scenario_name = compound_name,
   compound_load_gramm_per_capita_and_day,
-  compound_elimination_method = "compound_specific",
+  compound_elimination_method = NULL,
   compound_elimination_STP = NULL,
   with_lake_elimination = FALSE,
   add_absolute_load = FALSE,
@@ -35,7 +35,7 @@ wrap_table(
 
 \item{STP_filter_steps}{Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.}
 
-\item{STP_discharge_per_capita}{Single numeric value. Discharge per person and day \link{l / d}.}
+\item{STP_discharge_per_capita}{Single numeric value. Discharge per person and day \verb{[l / d]}.}
 
 \item{compound_load_gramm_per_capita_and_day}{Single numeric value. Amount of the compound excreted per person and day \verb{[g / d]}.}
 
@@ -78,6 +78,11 @@ In case of the file output, the first rows also contain
 input_table if provided, overwrites the following STP_arguments
 path_out
 add_absolute_load
+}
+\note{
+In contrast to column \code{type_advanced_treatment} of argument \code{STP_treatment_steps} in function \code{\link[=calc_load]{calc_load()}},
+the same column in \code{input_table} may also contain the entry \code{"redirection"}, apart from \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}.
+It is when \code{STP_reroute} is set to TRUE.
 }
 \examples{
 Bla.

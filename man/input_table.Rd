@@ -5,41 +5,37 @@
 \alias{input_table}
 \title{Example input table containing sewage treatment plants and lakes}
 \format{
-An object of class data.frame with 683 rows and 29 columns, of which the following columns are essential to be used with function \code{\link[=wrap_table]{wrap_table()}}:
+An object of class data.frame with 683 rows and 29 columns, of which only some or all of the following columns are essential for usage with function \code{\link[=wrap_table]{wrap_table()}}:
 \itemize{
-\item ID
-\item inhabitants
-\item ID_next
-\item Q347_L_s_min
-\item Q347_L_s_max
+\item \code{ID}: unique IDs (numbers or characters) of river network nodes such as STPs and lakes.
+\item \code{inhabitants}: number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
+\item \code{ID_next}: the ID of the next node directly downstream of each node (if any, else set entry to NA).
+\item columns \code{Q347_L_s_min} and \code{Q347_L_s_max}: minimum and maximum discharge just downstream of each STP or lake \verb{[l / s]}.
 }
 
-The follwing columns are required if \verb{in [wrap_table()] is set to}:
+The following columns are required if \code{compound_elimination_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{"compound_specific"}:
 \itemize{
-\item nitrification
-\item denitrification
-\item P_elimination
-\item type_advanced_treatment
-\item starting_year_advanced_treatment
-\item redirecting_STP_target_STP_ID
+\item columns \code{nitrification}, \code{denitrification} and \code{P_elimination}: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
+\item \code{type_advanced_treatment}: any of \code{"redirection"}, \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, or an empty entry if none of this applies for lakes
+or STPs without advanced treatment.
+\item \code{starting_year_advanced_treatment}: four-digit integer to state the year from which onwards the \code{type_advanced_treatment} applies (including the redirection to another STP).
+\item \code{redirecting_STP_target_STP_ID}: for any STP that contains \code{"redirection"} in \code{type_advanced_treatment}, the ID of another STP to which the discharge of its inhabitants
+is diverted.
 }
 
-The follwing columns are required if \verb{in [wrap_table()] is set to}:
+The following columns are required if \code{compound_elimination_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{"node_specific"}:
 \itemize{
-\item lake_elimination_min
-\item lake_elimination_max
+\item columns \code{STP_elimination_min} and \code{STP_elimination_max}: minimum and maximum elimination fractions \verb{[0, 1]} for each STP node. Set elements to NA (or 0) for lakes.
 }
 
-The follwing columns are required if \verb{in [wrap_table()] is set to}:
+The following columns are required if \code{with_lake_elimination} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{TRUE}:
 \itemize{
-\item STP_elimination_min
-\item STP_elimination_max
-\item 
+\item columns \code{lake_elimination_min} and \code{lake_elimination_max}: minimum and maximum elimination fractions \verb{[0, 1]} for each lake node. Set elements to NA (or 0) for STPs.
 }
 
-The follwing column is required if \verb{in [wrap_table()] is set to}:
+The following column is required if \code{add_absolute_load} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{TRUE}:
 \itemize{
-\item additional_absolut_load
+\item \code{additional_absolut_load}: absolute compounds loads to be added at each node \verb{[g / d]}.
 }
 }
 \usage{
@@ -48,6 +44,9 @@ See function [wrap_table()].
 \description{
 This table is mainly intended as an example \code{input_table} to be used with function \code{\link[=wrap_table]{wrap_table()}}.
 It contains information on sewage treatment plants (STPs) from Switzerland and neighbouring countries, as well as swiss lakes.
+}
+\note{
+Beware of the different time units used for columns \code{Q347_L_s_min/Q347_L_s_max} (seconds) vs. \code{additional_absolut_load} (days).
 }
 \author{
 Rebekka Gulde \email{rebekka.gulde@vsa.ch}

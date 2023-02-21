@@ -5,7 +5,7 @@
 #' @param STP_scenario_year 4-digit integer value for the scenario year. Defaults to the current year.
 #' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
 #' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
-#' @param STP_discharge_per_capita Single numeric value. Discharge per person and day [l / d]. 
+#' @param STP_discharge_per_capita Single numeric value. Discharge per person and day `[l / d]`. 
 #' @param compound_name
 #' @param scenario_name
 #' @param add_absolute_load
@@ -26,9 +26,9 @@
 #'
 #'
 #'
-#'
-#'
-#'
+#' @note In contrast to column `type_advanced_treatment` of argument `STP_treatment_steps` in function [calc_load()], 
+#' the same column in `input_table` may also contain the entry `"redirection"`, apart from `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`.
+#' It is when `STP_reroute` is set to TRUE.
 #'
 #'
 #' @returns A dataframe or two file outputs to
@@ -59,7 +59,7 @@ wrap_table <- function(
 	compound_name = "not_specified",
 	scenario_name = compound_name,
 	compound_load_gramm_per_capita_and_day,
-	compound_elimination_method = "compound_specific",
+	compound_elimination_method = NULL,
 	compound_elimination_STP = NULL,
 	with_lake_elimination = FALSE,
 	add_absolute_load = FALSE,

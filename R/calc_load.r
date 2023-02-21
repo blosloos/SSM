@@ -57,7 +57,7 @@
 #' and with a routing based on `ID_next`.
 #'
 #' Optionally, and in a fourth stage, these cumulated loads are further degraded in lakes (arguments `with_lake_elimination` and `lake_eliminination_rates`) 
-#' or can receive additional absolut inputs via arguments `add_absolute_load` and `absolute_loads`. 
+#' or can receive additional absolut inputs via arguments `add_absolute_load` and `absolute_loads` (and which are not subject to any elimination). 
 #' For the lake elimination, all loads of upstream STPs are first summed and then reduced by the lake-specific `lake_eliminination_rates`.
 #'
 #' The `"compound_specific"` elimination rates are set as a product, and as far as they are relevant at each STP based on input `STP_treatment_steps`.
@@ -69,6 +69,8 @@
 #' Thus, the user has to take care (depending on function arguments compound_elimination_method and with_lake_elimination) that no entries other 
 #' than `"none"` or NA exist for lakes in inputs STP_treatment_steps or STP_elimination_rates, respectively; 
 #' and in turn no others than NAs in input lake_eliminination_rates for the STP nodes.
+#'
+#' Note that the `absolute_loads`, if used, are not subjected to any elimination, regardless `"compound_specific"` or `"node_specific"` degradation.
 #'
 #'
 #' @seealso [wrap_table()]

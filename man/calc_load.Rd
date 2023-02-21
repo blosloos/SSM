@@ -95,7 +95,7 @@ The loads thus released from each STP (cp. returned \code{load_local_g_d}) are t
 and with a routing based on \code{ID_next}.
 
 Optionally, and in a fourth stage, these cumulated loads are further degraded in lakes (arguments \code{with_lake_elimination} and \code{lake_eliminination_rates})
-or can receive additional absolut inputs via arguments \code{add_absolute_load} and \code{absolute_loads}.
+or can receive additional absolut inputs via arguments \code{add_absolute_load} and \code{absolute_loads} (and which are not subject to any elimination).
 For the lake elimination, all loads of upstream STPs are first summed and then reduced by the lake-specific \code{lake_eliminination_rates}.
 
 The \code{"compound_specific"} elimination rates are set as a product, and as far as they are relevant at each STP based on input \code{STP_treatment_steps}.
@@ -107,6 +107,8 @@ There is no explicit indication as to whether an entry in vector ID represents a
 Thus, the user has to take care (depending on function arguments compound_elimination_method and with_lake_elimination) that no entries other
 than \code{"none"} or NA exist for lakes in inputs STP_treatment_steps or STP_elimination_rates, respectively;
 and in turn no others than NAs in input lake_eliminination_rates for the STP nodes.
+
+Note that the \code{absolute_loads}, if used, are not subjected to any elimination, regardless \code{"compound_specific"} or \code{"node_specific"} degradation.
 }
 \examples{
 
