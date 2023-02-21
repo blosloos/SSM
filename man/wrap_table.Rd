@@ -27,7 +27,7 @@ wrap_table(
 )
 }
 \arguments{
-\item{input_table}{dataframe}
+\item{input_table}{Dataframe containing various information on sewage treatment plants and lakes, cp. example data \link{input_table}}
 
 \item{STP_scenario_year}{4-digit integer value for the scenario year. Defaults to the current year.}
 
@@ -84,5 +84,5 @@ Bla.
 
 }
 \seealso{
-\code{\link[=calc_load]{calc_load()}}
+\code{\link[=calc_load]{calc_load()}}, \link{input_table}
 }

@@ -1,7 +1,7 @@
 #' Wrapper to calculate minimum and maximum loads and concentrations from an table input and using [calc_load()]
 #'
 #' @inheritParams calc_load
-#' @param input_table dataframe
+#' @param input_table Dataframe containing various information on sewage treatment plants and lakes, cp. example data [input_table]
 #' @param STP_scenario_year 4-digit integer value for the scenario year. Defaults to the current year.
 #' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
 #' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
@@ -41,7 +41,7 @@
 #'
 #' In case of the file output, the first rows also contain 
 #'
-#' @seealso [calc_load()]
+#' @seealso [calc_load()], [input_table]
 #'
 #' @export Bla.
 #'
