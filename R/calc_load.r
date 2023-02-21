@@ -78,7 +78,6 @@
 #' ID <- c(1, 2, 3, 4, 5)	# nodes: STP, STP, STP, lake, STP
 #' ID_next <- c(4, 3, 4, 5, NA)	# node with ID = 5 has no downstream node (hence ID_next = NA)
 #' inhabitants <- c(403, 150, 324, NA, 172)	# all excertion is cleaned in STPs, none hoes into the lake
-#' compound_load_gramm_per_capita_and_day <- 100 * 1E-6
 #' 
 #' compound_elimination_STP <- data.frame(
 #' 	COD_treatment = 0.5, nitrification = 0.6,
@@ -97,13 +96,15 @@
 #' lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
 #' 
 #'calc_load(
-#'	ID, ID_next, inhabitants,	
-#'	compound_load_gramm_per_capita_and_day,		
+#'	ID = ID, 
+#'	ID_next = ID_next, 
+#'	inhabitants = inhabitants,	
+#'	compound_load_gramm_per_capita_and_day = 100 * 1E-6,		
 #'	compound_elimination_method = "compound_specific",
-#'	compound_elimination_STP,
-#'	STP_treatment_steps,
+#'	compound_elimination_STP = compound_elimination_STP,
+#'	STP_treatment_steps = STP_treatment_steps,
 #'	with_lake_elimination = TRUE, 
-#'	lake_eliminination_rates
+#'	lake_eliminination_rates = lake_eliminination_rates
 #')
 #'
 #'
@@ -122,7 +123,6 @@ calc_load <- function(
 	add_absolute_load = FALSE,
 	absolute_loads = FALSE,
 	return_data = "loads"
-	
 ){
 
 	###############################################
@@ -131,6 +131,8 @@ calc_load <- function(
 	if(!identical(length(ID), length(inhabitants))) stop("Problem in calc_load: length of vectro inhabitants not equal to the ID vector.")
 	if(!is.numeric(inhabitants)) stop("Problem in calc_load: vector inhabitants must be numeric.")
 	if(any(is.na(inhabitants))) inhabitants[is.na(inhabitants)] <- 0
+	if(!is.logical(with_lake_elimination)) stop("Problem in calc_load: with_lake_elimination must be logical.")
+	if(!is.logical(add_absolute_load)) stop("Problem in calc_load: add_absolute_load must be logical.")
 	if(!is.data.frame(compound_elimination_STP)) stop("Problem in calc_load, argument compound_elimination_STP is not a dataframe.")
 	if(any(!sapply(compound_elimination_STP, is.numeric))) stop("Problem in calc_load, dataframe compound_elimination_STP has non-numeric entries.")
 	STP_steps_all <- c("COD_treatment", "nitrification", "denitrification", "P_elimination", "GAC", "combi", "ozonation", "PAC", "undefined")

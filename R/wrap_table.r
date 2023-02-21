@@ -1,7 +1,7 @@
 #' Wrapper to calculate minimum and maximum loads and concentrations from an table input and using [calc_load()]
 #'
 #' @inheritParams calc_load
-#' @param model_input_table dataframe
+#' @param input_table dataframe
 #' @param STP_scenario_year 4-digit integer value for the scenario year. Defaults to the current year.
 #' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
 #' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
@@ -11,7 +11,7 @@
 #' @param add_absolute_load
 #' @param use_columns_local_discharge
 #' @param use_STP_elimination_rate
-#' @param add_columns_from_model_input_table
+#' @param add_columns_from_input_table
 #' @param path_out NULL (default) or string containing path for writing csv or Excel. 
 #' @param overwrite Logical, used if path_out is not NULL. Overwrite any existing file? Defaults to TRUE.
 #' @param write_csv Logical, used if path_out is not NULL. Default to TRUE, else exports an Excel file. 
@@ -20,7 +20,7 @@
 #' @description 
 #' 
 #' 
-#' model_input_table if provided, overwrites the following STP_arguments 
+#' input_table if provided, overwrites the following STP_arguments 
 #' path_out
 #' add_absolute_load
 #'
@@ -51,7 +51,7 @@
 
 
 wrap_table <- function(
-	model_input_table,
+	input_table,
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,
 	STP_filter_steps = TRUE,
@@ -65,7 +65,7 @@ wrap_table <- function(
 	add_absolute_load = FALSE,
 	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
-	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
+	add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
 	path_out = NULL,
 	overwrite = TRUE,
 	write_csv = TRUE,
@@ -73,7 +73,7 @@ wrap_table <- function(
 ){
 
 	###############################################
-	# checks / extract model_input_table columns
+	# checks / extract input_table columns
 	if(!identical(
 		length(compound_load_gramm_per_capita_and_day),
 		length(use_columns_local_discharge),
@@ -84,24 +84,24 @@ wrap_table <- function(
 	if(length(compound_load_gramm_per_capita_and_day) == 2){
 		compound_load_gramm_per_capita_and_day <- sort(compound_load_gramm_per_capita_and_day,  decreasing = TRUE)
 		if(any(compound_elimination_STP[1, ] > compound_elimination_STP[2, ])) stop("compound_elimination_STP set incorrectly for range calculation")
-		if(any(model_input_table[, use_columns_local_discharge[1]] > model_input_table[, use_columns_local_discharge[2]], na.rm = TRUE)) stop("use_columns_local_discharge set incorrectly for range calculation")	
+		if(any(input_table[, use_columns_local_discharge[1]] > input_table[, use_columns_local_discharge[2]], na.rm = TRUE)) stop("use_columns_local_discharge set incorrectly for range calculation")	
 	}
 	use_columns_local_discharge_for_fractions <- use_columns_local_discharge[1]
 	if((compound_elimination_method == "node_specific") & (use_STP_elimination_rate[1] == FALSE)) stop("compound_elimination_method set to node_specific, but no STP columns for use_STP_elimination_rate defined. Please revise.")
 	if(!is.numeric(as.numeric(STP_scenario_year))) stop("STP_scenario_year not set correctly, please revise.")
-	if(!is.null(model_input_table) & !is.data.frame(model_input_table)) stop("model_input_table must be either NULL or a dataframe")
+	if(!is.null(input_table) & !is.data.frame(input_table)) stop("input_table must be either NULL or a dataframe")
 	if(with_lake_elimination){
-		if(!("lake_elimination_min" %in% names(model_input_table))) stop("Column lake_elimination_min missing in model_input_table")
-		if(!("lake_elimination_max" %in% names(model_input_table))) stop("Column lake_elimination_max missing in model_input_table")			
+		if(!("lake_elimination_min" %in% names(input_table))) stop("Column lake_elimination_min missing in input_table")
+		if(!("lake_elimination_max" %in% names(input_table))) stop("Column lake_elimination_max missing in input_table")			
 	}
-	if(add_absolute_load) if(!("additional_absolut_load" %in% names(model_input_table))) stop("Column additional_absolut_load missing in model_input_table")
-	if(!("ID" %in% colnames(model_input_table))) stop("Column ID missing in model_input_table")
-	ID <- as.character(model_input_table$ID)
-	if(!("ID_next" %in% colnames(model_input_table))) stop("Column ID_next missing in model_input_table")
-	ID_next <- as.character(model_input_table$ID_next)
-	if(!("inhabitants" %in% colnames(model_input_table))) stop("Column inhabitants missing in model_input_table")
-	inhabitants <- as.numeric(gsub(".", "", as.character(model_input_table$inhabitants), fixed = TRUE))
-	STP_amount_people_local <- model_input_table$inhabitants
+	if(add_absolute_load) if(!("additional_absolut_load" %in% names(input_table))) stop("Column additional_absolut_load missing in input_table")
+	if(!("ID" %in% colnames(input_table))) stop("Column ID missing in input_table")
+	ID <- as.character(input_table$ID)
+	if(!("ID_next" %in% colnames(input_table))) stop("Column ID_next missing in input_table")
+	ID_next <- as.character(input_table$ID_next)
+	if(!("inhabitants" %in% colnames(input_table))) stop("Column inhabitants missing in input_table")
+	inhabitants <- as.numeric(gsub(".", "", as.character(input_table$inhabitants), fixed = TRUE))
+	STP_amount_people_local <- input_table$inhabitants
 	if(!is.numeric(inhabitants)) stop("Problem in wrap_table: inhabitants must be numeric.")
 	inhabitants[is.na(inhabitants)] <- 0	# e.g. for lakes
 	if(!identical(length(ID), length(ID_next), length(inhabitants))) stop("Problem in wrap_table: ID, ID_next and inhabitants must be of equal length.")
@@ -116,53 +116,53 @@ wrap_table <- function(
 	# reroute STPs depending on STP_scenario_year (re-assing inhabitants, adapt ID_next)
 	if(STP_reroute){
 		those <- which(
-			(model_input_table[, "type_advanced_treatment"] == "redirection") & 
-			(as.numeric(model_input_table[, "starting_year_advanced_treatment"]) <= STP_scenario_year)
+			(input_table[, "type_advanced_treatment"] == "redirection") & 
+			(as.numeric(input_table[, "starting_year_advanced_treatment"]) <= STP_scenario_year)
 		)
 		if(length(those)){
 			for(i in those){	
-				to_STP <- model_input_table[i, "redirecting_STP_target_STP_ID"] 		# per ID
-				if(!(to_STP %in% model_input_table$ID)) stop(paste0("Invalid redirecting_STP_target_STP_ID for STP ", model_input_table[i, "ID"]))
-				to_STP <- which(model_input_table[, "ID"] == to_STP) 					# per table position
-				if(!is.na(model_input_table[to_STP, "redirecting_STP_target_STP_ID"])) stop(paste0("Invalid redirecting_STP_target_STP_ID for STP ", model_input_table[i, "ID"], ": rerouted STP is rerouted itself."))
-				has_STP_amount_people_local <- model_input_table[i, "inhabitants"]
-				model_input_table[to_STP, "inhabitants"] <- model_input_table[to_STP, "inhabitants"] + has_STP_amount_people_local
+				to_STP <- input_table[i, "redirecting_STP_target_STP_ID"] 		# per ID
+				if(!(to_STP %in% input_table$ID)) stop(paste0("Invalid redirecting_STP_target_STP_ID for STP ", input_table[i, "ID"]))
+				to_STP <- which(input_table[, "ID"] == to_STP) 					# per table position
+				if(!is.na(input_table[to_STP, "redirecting_STP_target_STP_ID"])) stop(paste0("Invalid redirecting_STP_target_STP_ID for STP ", input_table[i, "ID"], ": rerouted STP is rerouted itself."))
+				has_STP_amount_people_local <- input_table[i, "inhabitants"]
+				input_table[to_STP, "inhabitants"] <- input_table[to_STP, "inhabitants"] + has_STP_amount_people_local
 				# if rerouted STP is an ID_next to another STP -> adapt these to its ID_next, if necessary looped in case the latter is rerouted as well
-				if(model_input_table$ID[i] %in% model_input_table$ID_next){
-					for_this_STP <- which(model_input_table$ID_next == model_input_table$ID[i])
-					to_STP_next <- model_input_table$ID_next[i]
-					at_STP_next <- which(model_input_table$ID == to_STP_next)
+				if(input_table$ID[i] %in% input_table$ID_next){
+					for_this_STP <- which(input_table$ID_next == input_table$ID[i])
+					to_STP_next <- input_table$ID_next[i]
+					at_STP_next <- which(input_table$ID == to_STP_next)
 					repeat( 	# if necessary looped in case the latter is rerouted as well
 						if(at_STP_next %in% those){
-							to_STP_next <- model_input_table$ID_next[at_STP_next]
+							to_STP_next <- input_table$ID_next[at_STP_next]
 							if(is.na(to_STP_next)) break
-							at_STP_next <- which(model_input_table$ID == to_STP_next)							
+							at_STP_next <- which(input_table$ID == to_STP_next)							
 						}else break
 					)
-					model_input_table$ID_next[for_this_STP] <- to_STP_next
+					input_table$ID_next[for_this_STP] <- to_STP_next
 				}
 			}
-			model_input_table <- model_input_table[-those,, drop = FALSE]
-			ID <- as.character(model_input_table$ID)
-			ID_next <- as.character(model_input_table$ID_next)
-			inhabitants <- as.numeric(gsub(".", "", as.character(model_input_table$inhabitants), fixed = TRUE))
+			input_table <- input_table[-those,, drop = FALSE]
+			ID <- as.character(input_table$ID)
+			ID_next <- as.character(input_table$ID_next)
+			inhabitants <- as.numeric(gsub(".", "", as.character(input_table$inhabitants), fixed = TRUE))
 			inhabitants[is.na(inhabitants)] <- 0	# e.g. for lakes
-			STP_amount_people_local <- model_input_table$inhabitants
+			STP_amount_people_local <- input_table$inhabitants
 		}
 	}
 	###############################################	
 	
 	###############################################	
 	# get & clean STP treatment steps
-	miss_col <- which(!(c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment") %in% names(model_input_table)))
+	miss_col <- which(!(c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment") %in% names(input_table)))
 	if(length(miss_col)){
 		stop(
 			paste0("Column(s) with name ", 
 				paste(c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"))[miss_col], 
-				" missing in model_input_table")
+				" missing in input_table")
 		)
 	}
-	STP_treatment_steps <- model_input_table[, c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"), drop = FALSE]
+	STP_treatment_steps <- input_table[, c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"), drop = FALSE]
 	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
 	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
 	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
@@ -189,26 +189,26 @@ wrap_table <- function(
 			cols_required <- c(cols_required, use_STP_elimination_rate[n])
 			use_columns_STP_elimination_rate_loop <- use_STP_elimination_rate[n]	
 		}
-		if(any(is.na(match(cols_required, names(model_input_table))))){
-			these_missing <- paste(cols_required[is.na(match(cols_required, names(model_input_table)))], collapse = ", ")
-			stop(paste0("model_input_table is missing these columns: ", these_missing))
+		if(any(is.na(match(cols_required, names(input_table))))){
+			these_missing <- paste(cols_required[is.na(match(cols_required, names(input_table)))], collapse = ", ")
+			stop(paste0("input_table is missing these columns: ", these_missing))
 		}
-		STP_local_discharge_river_loop <- as.numeric(model_input_table[, use_columns_local_discharge_loop])
+		STP_local_discharge_river_loop <- as.numeric(input_table[, use_columns_local_discharge_loop])
 		if(compound_elimination_method == "node_specific"){
-			use_STP_elimination_loop <- as.numeric(model_input_table[, use_columns_STP_elimination_rate_loop])
+			use_STP_elimination_loop <- as.numeric(input_table[, use_columns_STP_elimination_rate_loop])
 		}else use_STP_elimination_loop <- FALSE
 		compound_load_gramm_per_capita_and_day_loop <- compound_load_gramm_per_capita_and_day[n]
 		if(with_lake_elimination){		
-			if(n == 1) lake_eliminination_loop <- as.numeric(model_input_table$lake_elimination_min)
-			if(n == 2) lake_eliminination_loop <- as.numeric(model_input_table$lake_elimination_max)
-		}else lake_eliminination_loop <- rep(0, nrow(model_input_table))
+			if(n == 1) lake_eliminination_loop <- as.numeric(input_table$lake_elimination_min)
+			if(n == 2) lake_eliminination_loop <- as.numeric(input_table$lake_elimination_max)
+		}else lake_eliminination_loop <- rep(0, nrow(input_table))
 		compound_elimination_STP_loop <- compound_elimination_STP[n,, drop = FALSE]
-		if(add_absolute_load) absolute_loads_loop <- model_input_table$additional_absolut_load else absolute_loads_loop <- rep(0, nrow(model_input_table))	
+		if(add_absolute_load) absolute_loads_loop <- input_table$additional_absolut_load else absolute_loads_loop <- rep(0, nrow(input_table))	
 		###########################################
 		result_table <- SSM:::calc_load(	# calculate local and cumulative loads [g / d]
 			ID = ID,
 			STP_treatment_steps = STP_treatment_steps,
-			ID_next = model_input_table$ID_next,
+			ID_next = input_table$ID_next,
 			inhabitants = inhabitants,
 			STP_elimination_rates = use_STP_elimination_loop,
 			compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day_loop,
@@ -241,7 +241,7 @@ wrap_table <- function(
 	topo_matrix <- SSM:::calc_load(
 		ID = ID,
 		STP_treatment_steps = STP_treatment_steps,
-		ID_next = model_input_table$ID_next,
+		ID_next = input_table$ID_next,
 		inhabitants = inhabitants,	
 		STP_elimination = use_STP_elimination_loop,
 		compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day_loop,		# [g / d], set to FALSE to ignore
@@ -276,7 +276,7 @@ wrap_table <- function(
 	STP_local_discharge_L_s  <- STP_amount_people_local * STP_discharge_per_capita / (24 * 60 * 60) 				# convert to [l/s]
 	STP_amount_people_cumulated <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local)
 	STP_cumulated_discharge_L_s <- STP_amount_people_cumulated * STP_discharge_per_capita / (24 * 60 * 60) 		# convert to [l/s]
-	STP_local_discharge_river <- as.numeric(model_input_table[, use_columns_local_discharge_for_fractions])
+	STP_local_discharge_river <- as.numeric(input_table[, use_columns_local_discharge_for_fractions])
 	Fraction_STP_discharge_of_river_local <- STP_local_discharge_L_s  / STP_local_discharge_river
 	Fraction_STP_discharge_of_river_cumulated <- STP_cumulated_discharge_L_s / STP_local_discharge_river
 	Fraction_STP_discharge_of_river_local_includingSTPdischarge <- STP_local_discharge_L_s  / (STP_local_discharge_river + STP_local_discharge_L_s)
@@ -409,11 +409,11 @@ wrap_table <- function(
 		if(file.exists(file.path(path_out, paste0(scenario_name, ".csv"))) & !overwrite) stop("File at path_out already exists, and overwrite is set to FALSE")
 		
 		# append infos to result_table
-		use_cols <- match(add_columns_from_model_input_table, names(model_input_table))
-		use_rows <- match(model_input_table[, "ID"], result_table[, "ID"])
+		use_cols <- match(add_columns_from_input_table, names(input_table))
+		use_rows <- match(input_table[, "ID"], result_table[, "ID"])
 		result_table <- cbind(
 			"ID" = result_table[, "ID"], 
-			model_input_table[use_rows, use_cols], 
+			input_table[use_rows, use_cols], 
 			result_table[, names(result_table) != "ID"]
 		)
 		result_table <- rbind(

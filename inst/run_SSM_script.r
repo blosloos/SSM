@@ -16,7 +16,7 @@ library(SSM)
 xlsxFile_path <- "C:/Projects/VSA/round_fin/model_inputs.xlsx"
 sheet_name <- "model_inputs"
 
-model_input_table <- openxlsx:::read.xlsx(xlsxFile = xlsxFile_path, sheet = sheet_name, startRow = 3)
+input_table <- openxlsx:::read.xlsx(xlsxFile = xlsxFile_path, sheet = sheet_name, startRow = 3)
  
 # Output-Pfad setzen:
 path_out <- "C:/Projects/VSA/round_fin/example_outputs"

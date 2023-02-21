@@ -75,7 +75,7 @@ Depending on argument \code{return_data}, either the routing matrix (cp. \code{\
 \item \code{load_local_g_d}: compound amount discharged from each STP after elimination \verb{[g / d]}
 \item \code{load_cumulated_g_d}: cumulated compound amount just downstream of each STP or lake \verb{[g / d]}
 \item \code{inhabitants_cumulated}: cumulated number of inhabitants just downstream of each STP or lake
-\item \code{STP_count_cumulated}: cumulated number of STPs just downstream of each STP or lake
+\item \code{node_count_cumulated}: cumulated number of nodes upstream of a each STP or lake node
 }
 }
 \description{
@@ -113,7 +113,6 @@ and in turn no others than NAs in input lake_eliminination_rates for the STP nod
 ID <- c(1, 2, 3, 4, 5)	# nodes: STP, STP, STP, lake, STP
 ID_next <- c(4, 3, 4, 5, NA)	# node with ID = 5 has no downstream node (hence ID_next = NA)
 inhabitants <- c(403, 150, 324, NA, 172)	# all excertion is cleaned in STPs, none hoes into the lake
-compound_load_gramm_per_capita_and_day <- 100 * 1E-6
 
 compound_elimination_STP <- data.frame(
 	COD_treatment = 0.5, nitrification = 0.6,
@@ -132,13 +131,15 @@ STP_treatment_steps <- cbind(	# define presence of treatment steps
 lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
 
 calc_load(
-ID, ID_next, inhabitants,	
-compound_load_gramm_per_capita_and_day,		
+ID = ID, 
+ID_next = ID_next, 
+inhabitants = inhabitants,	
+compound_load_gramm_per_capita_and_day = 100 * 1E-6,		
 compound_elimination_method = "compound_specific",
-compound_elimination_STP,
-STP_treatment_steps,
+compound_elimination_STP = compound_elimination_STP,
+STP_treatment_steps = STP_treatment_steps,
 with_lake_elimination = TRUE, 
-lake_eliminination_rates
+lake_eliminination_rates = lake_eliminination_rates
 )
 
 

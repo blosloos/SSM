@@ -5,7 +5,7 @@
 \title{Wrapper to calculate minimum and maximum loads and concentrations from an table input and using \code{\link[=calc_load]{calc_load()}}}
 \usage{
 wrap_table(
-  model_input_table,
+  input_table,
   STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
   STP_reroute = TRUE,
   STP_filter_steps = TRUE,
@@ -19,7 +19,7 @@ wrap_table(
   add_absolute_load = FALSE,
   use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
   use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
-  add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
+  add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
   path_out = NULL,
   overwrite = TRUE,
   write_csv = TRUE,
@@ -27,7 +27,7 @@ wrap_table(
 )
 }
 \arguments{
-\item{model_input_table}{dataframe}
+\item{input_table}{dataframe}
 
 \item{STP_scenario_year}{4-digit integer value for the scenario year. Defaults to the current year.}
 
@@ -75,7 +75,7 @@ A dataframe or two file outputs to
 In case of the file output, the first rows also contain
 }
 \description{
-model_input_table if provided, overwrites the following STP_arguments
+input_table if provided, overwrites the following STP_arguments
 path_out
 add_absolute_load
 }
