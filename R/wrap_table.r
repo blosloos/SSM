@@ -1,4 +1,5 @@
-#' Wrapper to calculate minimum and maximum loads and concentrations from an table input and using [calc_load()]
+#' Calculate ranges of compound loads and concentrations in a river network under different scenarios of sewage treatment.
+#'
 #'
 #' @inheritParams calc_load
 #' @param input_table Dataframe containing various information on sewage treatment plants and lakes, cp. example data [input_table]
@@ -6,47 +7,102 @@
 #' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
 #' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
 #' @param STP_discharge_per_capita Single numeric value. Discharge per person and day `[l / d]`. 
-#' @param compound_name
-#' @param scenario_name
-#' @param add_absolute_load
-#' @param use_columns_local_discharge
-#' @param use_STP_elimination_rate
-#' @param add_columns_from_input_table
-#' @param path_out NULL (default) or string containing path for writing csv or Excel. 
+#' @param use_columns_local_discharge Character vector with two column names from `input_table` for minimum and maximum discharge just downstream of an STP or lake. The defaults is `c("Q347_L_s_min", "Q347_L_s_max")`. 
+#' @param use_STP_elimination_rate Character vector with two column names from `input_table` for minimum and maximum STP-specific elimination rates, 
+#' required for compound_elimination_method `"node_specific"`. Defaults to `c("STP_elimination_min", "STP_elimination_max")`. 
+#' @param add_columns_from_input_table Character vector with names of columns from `input_table` to be attached and exported with the results table.  
+#' @param compound_name Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv. 
+#' @param scenario_name Character string defaulting to `compound_name`. Name of the exported csv or Excel file path_out is not NULL. 
+#' @param path_out NULL (default) or string containing folder path for writing csv or Excel (not containing the file name, cp. `scenario_name`). 
 #' @param overwrite Logical, used if path_out is not NULL. Overwrite any existing file? Defaults to TRUE.
-#' @param write_csv Logical, used if path_out is not NULL. Default to TRUE, else exports an Excel file. 
+#' @param write_csv Logical, used if path_out is not NULL. Defaults to TRUE to write both exported files as csv, else exports one of these as Excel file (cp. return value section). 
 #' @param use_sep_csv String for csv sperataror, used if path_out is not NULL. 
 #'
-#' @description 
-#' 
-#' 
-#' input_table if provided, overwrites the following STP_arguments 
-#' path_out
-#' add_absolute_load
 #'
+#' @description 
+#' Wrapper function on [calc_load()] to calculate minimum and maximum loads and concentrations of a compound in a river network from an input table 
+#' containing information on sewage treatment plants (STPs) and lake nodes. `STP_scenario_year` allows simulations for different stages of advanced treatment
+#' or a rerouting of STPs.
+#'
+#'
+#' @details Check function [calc_load()] for the underlying approach on calculating loads from human compound inputs and their elimination in STPs (cp. argument `compound_elimination_method`) 
+#' and lakes (cp. `with_lake_elimination`).
+#' Using [table_input], this wrapper extends this approach by estimating minimum and maximum loads and their aquatic concentrations.
+#' By using an `STP_scenario_year` and column `starting_year_advanced_treatment` in [input_table] (and possibly in combination with `STP_reroute`) data for different points in 
+#' time can be simulated.
 #'
 #'
 #' @note In contrast to column `type_advanced_treatment` of argument `STP_treatment_steps` in function [calc_load()], 
 #' the same column in `input_table` may also contain the entry `"redirection"`, apart from `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`.
-#' It is when `STP_reroute` is set to TRUE.
+#' It redirects the influent from one STP to another `redirecting_STP_target_STP_ID` (another column in [input_table]) when `STP_reroute` is set to TRUE, in combination
+#' with argument `STP_scenario_year` and `starting_year_advanced_treatment` (yet another column in [input_table]) .
 #'
 #'
-#' @returns A dataframe or two file outputs to
-#' . One with the following columns:
+#' @returns This function either returns a dataframe (if `path_out` is not specified) or saves two file named `scenario_name_topo_matrix` and
+#' `scenario_name` (or, if not provided, `compound_name`) into folder `path_out`. 
+#' The first is always a csv format and contains the topology (i.e. routing) matrix used for the calculations. 
+#' The second file is either a csv of Excel format (depending on `write_csv`) with the following result columns:
 #' 
+#'* `ID`: Node IDs of STPs and lakes
+#'* `inhabitants_cumulated`: cumulated number of inhabitants just downstream of each STP or lake
+#'* `STP_local_discharge_L_s`: product of inhabitants and STP_discharge_per_capita from each STP `[l / s]`
+#'* `STP_cumulated_discharge_L_s`: cumulated product of inhabitants and STP_discharge_per_capita just downstream each STP or lake node `[l / s]`
+#'* `node_count_cumulated`: cumulated number of nodes upstream of a each STP or lake node
+#'* `Fraction_STP_discharge_of_river_local`: STP_local_discharge_L_s divided by the local discharge (i.e., first column in argument `use_columns_local_discharge`)
+#'* `Fraction_STP_discharge_of_river_cumulated`: STP_cumulated_discharge_L_s divided by the local discharge (i.e., first column in argument `use_columns_local_discharge`)
+#'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated`: local discharge (i.e., first column in argument `use_columns_local_discharge`) divided by 
+#' the sewage discharge from STPs without advanced treatments.
 #'
+#'* `Fraction_STP_discharge_of_river_local_includingSTPdischarge`: STP_local_discharge_L_s divided by the sum of local discharge (i.e., first column in argument 
+#' `use_columns_local_discharge`) and `STP_local_discharge_L_s`
 #'
+#'* `Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge`: STP_cumulated_discharge_L_s divided by the sum of local discharge (i.e., first column in argument 
+#' `use_columns_local_discharge`) and `STP_local_discharge_L_s`
 #'
+#'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge`: STP_cumulated_discharge_L_s from STPs without advanced treatment divided by
+#' the sum of local discharge (i.e., first column in argument `use_columns_local_discharge`) and `STP_local_discharge_L_s`
 #'
+#'* `Fraction_of_wastewater_only_C_removal`: fraction of cumulated STP discharge from STPs without nitrification, denitrification and any advanced treatment step, just downstream of each STP or lake.
+#'* `Fraction_of_wastewater_nitrification`: fraction of cumulated STP discharge from STPs with nitrification, but without denitrification and any advanced treatment step, just downstream of each STP or lake. 
+#'* `Fraction_of_wastewater_denitrification`: fraction of cumulated STP discharge from STPs with nitrification and denitrification but without any advanced treatment step, just downstream of each STP or lake.  
+#'* `Fraction_of_wastewater_advanced_treatment`: fraction of cumulated STP discharge from STPs with an advanced treatment step, just downstream of each STP or lake.  
 #'
-#' In case of the file output, the first rows also contain 
+#'* columns `input_load_local_g_d_max` and `input_load_local_g_d_min`: maximum and minimum compound amount released into each STP `[g / d]`, i.e., inhabitants * compound_load_gramm_per_capita_and_day 
+#'
+#'* columns `load_local_g_d_max` and `load_local_g_d_min`: maximum and minimum compound amount discharged from each STP after elimination `[g / d]`
+#'
+#'* columns `load_cumulated_g_d_max` and `load_cumulated_g_d_min`: maximum and minimum cumulated compound amount just downstream of each STP or lake `[g / d]`
+#'
+#'* columns `conc_local_ug_L_max` and `conc_local_ug_L_min`: `load_local_g_d_max` and `load_local_g_d_min` divided local discharge (i.e., relevant min/max columns in argument `use_columns_local_discharge`)
+#'
+#'* columns `conc_cumulated_ug_L_max` and `conc_cumulated_ug_L_min`: `load_cumulated_g_d_max` and `load_cumulated_g_d_min` divided local discharge (i.e., relevant min/max columns in argument `use_columns_local_discharge`)
+#'
+#' In case of the Excel file output, the first rows in the spreadsheet also contain the parameters and the `compound_name` used.
 #'
 #' @seealso [calc_load()], [input_table]
 #'
-#' @export Bla.
+#' @examples Bla. With add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
 #'
-#' @examples Bla.
 #'
+#'
+#'
+#'
+#'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -56,8 +112,6 @@ wrap_table <- function(
 	STP_reroute = TRUE,
 	STP_filter_steps = TRUE,
 	STP_discharge_per_capita = 400,
-	compound_name = "not_specified",
-	scenario_name = compound_name,
 	compound_load_gramm_per_capita_and_day,
 	compound_elimination_method = NULL,
 	compound_elimination_STP = NULL,
@@ -65,7 +119,9 @@ wrap_table <- function(
 	add_absolute_load = FALSE,
 	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
-	add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
+	add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
+	compound_name = "compound_not_specified",
+	scenario_name = compound_name,	
 	path_out = NULL,
 	overwrite = TRUE,
 	write_csv = TRUE,
@@ -78,28 +134,28 @@ wrap_table <- function(
 		length(compound_load_gramm_per_capita_and_day),
 		length(use_columns_local_discharge),
 		nrow(compound_elimination_STP)
-	)) stop("compound_load_gramm_per_capita_and_day, use_columns_local_discharge and the number of rows in compound_elimination_STP must be of equal length")	
-	if(length(compound_load_gramm_per_capita_and_day) != 2) stop("compound_load_gramm_per_capita_and_day, use_columns_local_discharge and the number of rows in compound_elimination_STP must have two entries")
-	if(nrow(compound_elimination_STP) != 2) stop("compound_elimination_STP must have two rows with min/max values")
+	)) stop("Problem in wrap_table: compound_load_gramm_per_capita_and_day, use_columns_local_discharge and the number of rows in compound_elimination_STP must be of equal length")	
+	if(length(compound_load_gramm_per_capita_and_day) != 2) stop("Problem in wrap_table: compound_load_gramm_per_capita_and_day, use_columns_local_discharge and the number of rows in compound_elimination_STP must have two entries")
+	if(nrow(compound_elimination_STP) != 2) stop("Problem in wrap_table: compound_elimination_STP must have two rows with min/max values")
 	if(length(compound_load_gramm_per_capita_and_day) == 2){
 		compound_load_gramm_per_capita_and_day <- sort(compound_load_gramm_per_capita_and_day,  decreasing = TRUE)
-		if(any(compound_elimination_STP[1, ] > compound_elimination_STP[2, ])) stop("compound_elimination_STP set incorrectly for range calculation")
-		if(any(input_table[, use_columns_local_discharge[1]] > input_table[, use_columns_local_discharge[2]], na.rm = TRUE)) stop("use_columns_local_discharge set incorrectly for range calculation")	
+		if(any(compound_elimination_STP[1, ] > compound_elimination_STP[2, ])) stop("Problem in wrap_table: compound_elimination_STP set incorrectly for range calculation")
+		if(any(input_table[, use_columns_local_discharge[1]] > input_table[, use_columns_local_discharge[2]], na.rm = TRUE)) stop("Problem in wrap_table: use_columns_local_discharge set incorrectly for range calculation")	
 	}
 	use_columns_local_discharge_for_fractions <- use_columns_local_discharge[1]
-	if((compound_elimination_method == "node_specific") & (use_STP_elimination_rate[1] == FALSE)) stop("compound_elimination_method set to node_specific, but no STP columns for use_STP_elimination_rate defined. Please revise.")
-	if(!is.numeric(as.numeric(STP_scenario_year))) stop("STP_scenario_year not set correctly, please revise.")
-	if(!is.null(input_table) & !is.data.frame(input_table)) stop("input_table must be either NULL or a dataframe")
+	if((compound_elimination_method == "node_specific") & (use_STP_elimination_rate[1] == FALSE)) stop("Problem in wrap_table: compound_elimination_method set to node_specific, but no STP columns for use_STP_elimination_rate defined. Please revise.")
+	if(!is.numeric(as.numeric(STP_scenario_year))) stop("Problem in wrap_table: STP_scenario_year not set correctly, please revise.")
+	if(!is.null(input_table) & !is.data.frame(input_table)) stop("Problem in wrap_table: input_table must be either NULL or a dataframe")
 	if(with_lake_elimination){
-		if(!("lake_elimination_min" %in% names(input_table))) stop("Column lake_elimination_min missing in input_table")
-		if(!("lake_elimination_max" %in% names(input_table))) stop("Column lake_elimination_max missing in input_table")			
+		if(!("lake_elimination_min" %in% names(input_table))) stop("Problem in wrap_table: column lake_elimination_min missing in input_table")
+		if(!("lake_elimination_max" %in% names(input_table))) stop("Problem in wrap_table: column lake_elimination_max missing in input_table")			
 	}
-	if(add_absolute_load) if(!("additional_absolut_load" %in% names(input_table))) stop("Column additional_absolut_load missing in input_table")
-	if(!("ID" %in% colnames(input_table))) stop("Column ID missing in input_table")
+	if(add_absolute_load) if(!("additional_absolut_load" %in% names(input_table))) stop("Problem in wrap_table: column additional_absolut_load missing in input_table")
+	if(!("ID" %in% colnames(input_table))) stop("Problem in wrap_table: column ID missing in input_table")
 	ID <- as.character(input_table$ID)
-	if(!("ID_next" %in% colnames(input_table))) stop("Column ID_next missing in input_table")
+	if(!("ID_next" %in% colnames(input_table))) stop("Problem in wrap_table: column ID_next missing in input_table")
 	ID_next <- as.character(input_table$ID_next)
-	if(!("inhabitants" %in% colnames(input_table))) stop("Column inhabitants missing in input_table")
+	if(!("inhabitants" %in% colnames(input_table))) stop("Problem in wrap_table: column inhabitants missing in input_table")
 	inhabitants <- as.numeric(gsub(".", "", as.character(input_table$inhabitants), fixed = TRUE))
 	STP_amount_people_local <- input_table$inhabitants
 	if(!is.numeric(inhabitants)) stop("Problem in wrap_table: inhabitants must be numeric.")
@@ -122,9 +178,9 @@ wrap_table <- function(
 		if(length(those)){
 			for(i in those){	
 				to_STP <- input_table[i, "redirecting_STP_target_STP_ID"] 		# per ID
-				if(!(to_STP %in% input_table$ID)) stop(paste0("Invalid redirecting_STP_target_STP_ID for STP ", input_table[i, "ID"]))
+				if(!(to_STP %in% input_table$ID)) stop(paste0("Problem in wrap_table: invalid redirecting_STP_target_STP_ID for STP ", input_table[i, "ID"]))
 				to_STP <- which(input_table[, "ID"] == to_STP) 					# per table position
-				if(!is.na(input_table[to_STP, "redirecting_STP_target_STP_ID"])) stop(paste0("Invalid redirecting_STP_target_STP_ID for STP ", input_table[i, "ID"], ": rerouted STP is rerouted itself."))
+				if(!is.na(input_table[to_STP, "redirecting_STP_target_STP_ID"])) stop(paste0("Problem in wrap_table: invalid redirecting_STP_target_STP_ID for STP ", input_table[i, "ID"], ": rerouted STP is rerouted itself."))
 				has_STP_amount_people_local <- input_table[i, "inhabitants"]
 				input_table[to_STP, "inhabitants"] <- input_table[to_STP, "inhabitants"] + has_STP_amount_people_local
 				# if rerouted STP is an ID_next to another STP -> adapt these to its ID_next, if necessary looped in case the latter is rerouted as well
@@ -157,15 +213,15 @@ wrap_table <- function(
 	miss_col <- which(!(c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment") %in% names(input_table)))
 	if(length(miss_col)){
 		stop(
-			paste0("Column(s) with name ", 
+			paste0("Problem in wrap_table: column(s) with name ", 
 				paste(c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"))[miss_col], 
 				" missing in input_table")
 		)
 	}
 	STP_treatment_steps <- input_table[, c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"), drop = FALSE]
-	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
-	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
-	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("Problem in wrap_table: STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("Problem in wrap_table: TP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("Problem in wrap_table: STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
 	STP_treatment_steps[is.na(STP_treatment_steps[, "nitrification"]), "nitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "denitrification"]), "denitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "P_elimination"]), "P_elimination"] <- "No"
@@ -191,7 +247,7 @@ wrap_table <- function(
 		}
 		if(any(is.na(match(cols_required, names(input_table))))){
 			these_missing <- paste(cols_required[is.na(match(cols_required, names(input_table)))], collapse = ", ")
-			stop(paste0("input_table is missing these columns: ", these_missing))
+			stop(paste0("Problem in wrap_table: input_table is missing these columns: ", these_missing))
 		}
 		STP_local_discharge_river_loop <- as.numeric(input_table[, use_columns_local_discharge_loop])
 		if(compound_elimination_method == "node_specific"){
@@ -228,10 +284,10 @@ wrap_table <- function(
 		###########################################
 		
 	}
-	names(store_results[[1]]) <- c("ID", "input_load_local_g_d_max", "load_local_g_d_max", "load_cumulated_g_d_max", "inhabitants_cumulated", "STP_count_cumulated", "conc_local_ug_L_max", "conc_cumulated_ug_L_max")
-	names(store_results[[2]]) <- c("ID", "input_load_local_g_d_min", "load_local_g_d_min", "load_cumulated_g_d_min", "inhabitants_cumulated", "STP_count_cumulated", "conc_local_ug_L_min", "conc_cumulated_ug_L_min")
+	names(store_results[[1]]) <- c("ID", "input_load_local_g_d_max", "load_local_g_d_max", "load_cumulated_g_d_max", "inhabitants_cumulated", "node_count_cumulated", "conc_local_ug_L_max", "conc_cumulated_ug_L_max")
+	names(store_results[[2]]) <- c("ID", "input_load_local_g_d_min", "load_local_g_d_min", "load_cumulated_g_d_min", "inhabitants_cumulated", "node_count_cumulated", "conc_local_ug_L_min", "conc_cumulated_ug_L_min")
 	result_table <- cbind(
-		store_results[[1]][, c("ID", "input_load_local_g_d_max", "load_local_g_d_max", "load_cumulated_g_d_max", "inhabitants_cumulated", "STP_count_cumulated", "conc_local_ug_L_max", "conc_cumulated_ug_L_max")],
+		store_results[[1]][, c("ID", "input_load_local_g_d_max", "load_local_g_d_max", "load_cumulated_g_d_max", "inhabitants_cumulated", "node_count_cumulated", "conc_local_ug_L_max", "conc_cumulated_ug_L_max")],
 		store_results[[2]][, c("input_load_local_g_d_min", "load_local_g_d_min", "load_cumulated_g_d_min", "conc_local_ug_L_min", "conc_cumulated_ug_L_min")]	
 	)
 	###############################################
@@ -267,7 +323,7 @@ wrap_table <- function(
 			)
 			
 		})
-		if(class(done_write) == "try-error") stop("Export of results to path_out.csv failed. Is this path valid? Is the file open in another software?")
+		if(class(done_write) == "try-error") stop("Problem in wrap_table: qxport of results to path_out.csv failed. Is this path valid? Is the file open in another software?")
 	}
 	###############################################	
 	
@@ -289,22 +345,22 @@ wrap_table <- function(
 	classed[
 		(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
-		is.na(STP_treatment_steps[, "type_advanced_treatment"])
+		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined"))	
 	] <- "only_C_degradation"
 	classed[
 		(STP_treatment_steps[, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
-		is.na(STP_treatment_steps[, "type_advanced_treatment"])
+		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined"))
 	] <- "nitrification"	
 	classed[
 		(STP_treatment_steps[, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
-		is.na(STP_treatment_steps[, "type_advanced_treatment"])
+		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined"))
 	] <- "denitrification"		
 	classed[
-		!is.na(STP_treatment_steps[, "type_advanced_treatment"])
+		!(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined"))
 	] <- "has_treatment"			
-	
+		
 	# only_C_degradation
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "only_C_degradation"] <- 0
@@ -340,10 +396,11 @@ wrap_table <- function(
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_no_advanced_treatment <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 	
-	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(STP_local_discharge_river / sewage_discharge_cumulated_classed, digits = 3)	
+	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(STP_local_discharge_river / sewage_discharge_cumulated_classed, digits = 3)		
 	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge <- Fraction_of_wastewater_no_advanced_treatment * Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge
+	# i.e., = sewage_discharge_cumulated_classed / (STP_local_discharge_river + STP_local_discharge_L_s)
 
-	# rowsums for fractions must add up
+	# rowsums for fractions must add up to 1
 	has_row_sums <- rowSums(cbind(
 			"Fraction_of_wastewater_only_C_removal" = Fraction_of_wastewater_only_C_removal,
 			"Fraction_of_wastewater_nitrification" = Fraction_of_wastewater_nitrification,
@@ -351,7 +408,7 @@ wrap_table <- function(
 			"Fraction_of_wastewater_advanced_treatment" = Fraction_of_wastewater_advanced_treatment
 		))	
 	has_row_sums <- round(has_row_sums, digits = 5) # avoid rounding inaccuracies
-	if(any(has_row_sums != 1)) stop("Wrong treatment fractions in wrap_table - revise")
+	if(any(has_row_sums != 1)) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
 	
 	Fraction_of_wastewater_only_C_removal <- round(Fraction_of_wastewater_only_C_removal, digits = 3)
 	Fraction_of_wastewater_nitrification <- round(Fraction_of_wastewater_nitrification, digits = 3)
@@ -382,7 +439,7 @@ wrap_table <- function(
 		"inhabitants_cumulated",
 		"STP_local_discharge_L_s",
 		"STP_cumulated_discharge_L_s",
-		"STP_count_cumulated",
+		"node_count_cumulated",
 		"Fraction_STP_discharge_of_river_local",
 		"Fraction_STP_discharge_of_river_cumulated",
 		"Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated",
@@ -406,16 +463,22 @@ wrap_table <- function(
 	), drop = FALSE]	
 	
 	if(is.null(path_out)) return(result_table) else{
-		if(file.exists(file.path(path_out, paste0(scenario_name, ".csv"))) & !overwrite) stop("File at path_out already exists, and overwrite is set to FALSE")
+		if(file.exists(file.path(path_out, paste0(scenario_name, ".csv"))) & !overwrite) stop("Problem in wrap_table: file at path_out already exists, and overwrite is set to FALSE")
 		
 		# append infos to result_table
-		use_cols <- match(add_columns_from_input_table, names(input_table))
-		use_rows <- match(input_table[, "ID"], result_table[, "ID"])
-		result_table <- cbind(
-			"ID" = result_table[, "ID"], 
-			input_table[use_rows, use_cols], 
-			result_table[, names(result_table) != "ID"]
-		)
+		if(length(add_columns_from_input_table)){
+		
+			use_cols <- match(add_columns_from_input_table, names(input_table))
+			if(any(is.na(use_cols))) stop(paste0("Problem in wrap_table: invalid add_columns_from_input_table on ", add_columns_from_input_table[is.na(use_cols)]))
+
+			use_rows <- match(input_table[, "ID"], result_table[, "ID"])
+			result_table <- cbind(
+				"ID" = result_table[, "ID"], 
+				input_table[use_rows, use_cols], 
+				result_table[, names(result_table) != "ID"]
+			)
+		}
+		
 		result_table <- rbind(
 			rep("", ncol(result_table)),
 			rep("", ncol(result_table)),
@@ -470,7 +533,7 @@ wrap_table <- function(
 			done_write <- try({
 				write.table(result_table, file = file.path(path_out, paste0(scenario_name, ".csv")), append = FALSE, quote = TRUE, sep = use_sep_csv, row.names = FALSE)
 			})
-			if(class(done_write) == "try-error") stop("Export of results to path_out.csv failed. Is this path valid? Is the file open in another software?")
+			if(class(done_write) == "try-error") stop("Problem in wrap_table: export of results to path_out.csv failed. Is this path valid? Is the file open in another software?")
 		}else{
 			done_write <- try({
 				wb <- openxlsx:::createWorkbook()	
@@ -478,7 +541,7 @@ wrap_table <- function(
 				openxlsx:::writeData(wb, scenario_name, result_table, startCol = 2, startRow = 3, rowNames = FALSE)
 				openxlsx:::saveWorkbook(wb, file = file.path(path_out, paste0(scenario_name, ".xlsx")), overwrite = TRUE)
 			})
-			if(class(done_write) == "try-error") stop("Export of results to path_out.xlsx failed. Is this path valid? Is the file open in another software?")
+			if(class(done_write) == "try-error") stop("Problem in wrap_table: export of results to path_out.xlsx failed. Is this path valid? Is the file open in another software?")
 		}
 	
 	}

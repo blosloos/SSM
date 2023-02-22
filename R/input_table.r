@@ -15,8 +15,10 @@
 #'
 #' The following columns are required if `compound_elimination_method` in [wrap_table()] is set to `"compound_specific"`:
 #'* columns `nitrification`, `denitrification` and `P_elimination`: `"TRUE"` or `"FALSE"` for STP nodes, and `"none"` for lakes or similar.
-#'* `type_advanced_treatment`: any of `"redirection"`, `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`, or an empty entry if none of this applies for lakes 
-#' or STPs without advanced treatment.
+#'* `type_advanced_treatment`: any of `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`, `"redirection"`, or an empty entry if none of this applies for lakes 
+#' or STPs without advanced treatment. Here, `"undefined"` is a placeholder for yet unspecified but scheduled advanced treatment; 
+#' `"redirection"` implies that an STP will be closed and its influent rerouted to another STP at some point in time.
+#' 
 #'* `starting_year_advanced_treatment`: four-digit integer to state the year from which onwards the `type_advanced_treatment` applies (including the redirection to another STP).
 #'* `redirecting_STP_target_STP_ID`: for any STP that contains `"redirection"` in `type_advanced_treatment`, the ID of another STP to which the discharge of its inhabitants 
 #' is diverted.

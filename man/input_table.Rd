@@ -10,14 +10,15 @@ An object of class data.frame with 683 rows and 29 columns, of which only some o
 \item \code{ID}: unique IDs (numbers or characters) of river network nodes such as STPs and lakes.
 \item \code{inhabitants}: number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
 \item \code{ID_next}: the ID of the next node directly downstream of each node (if any, else set entry to NA).
-\item columns \code{Q347_L_s_min} and \code{Q347_L_s_max}: minimum and maximum discharge just downstream of each STP or lake \verb{[l / s]}.
+\item columns \code{Q347_L_s_min} and \code{Q347_L_s_max}: minimum and maximum discharge just downstream of each STP or a lake outlet \verb{[l / s]}.
 }
 
 The following columns are required if \code{compound_elimination_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{"compound_specific"}:
 \itemize{
 \item columns \code{nitrification}, \code{denitrification} and \code{P_elimination}: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
-\item \code{type_advanced_treatment}: any of \code{"redirection"}, \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, or an empty entry if none of this applies for lakes
-or STPs without advanced treatment.
+\item \code{type_advanced_treatment}: any of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, \code{"redirection"}, or an empty entry if none of this applies for lakes
+or STPs without advanced treatment. Here, \code{"undefined"} is a placeholder for yet unspecified but scheduled advanced treatment;
+\code{"redirection"} implies that an STP will be closed and its influent rerouted to another STP at some point in time.
 \item \code{starting_year_advanced_treatment}: four-digit integer to state the year from which onwards the \code{type_advanced_treatment} applies (including the redirection to another STP).
 \item \code{redirecting_STP_target_STP_ID}: for any STP that contains \code{"redirection"} in \code{type_advanced_treatment}, the ID of another STP to which the discharge of its inhabitants
 is diverted.

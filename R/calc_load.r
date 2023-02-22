@@ -14,12 +14,12 @@
 #'* combi
 #'* ozonation
 #'* PAC
-#'* undefined
+#'* undefined: placeholder for yet unspecified but scheduled advanced treatment, e.g., a mean elimination fraction for GAC, combi, ozonation and PAC.
 #'
 #' @param STP_treatment_steps Required for compound_elimination_method `"compound_specific"`. A dataframe of strings with number of rows equal to length of vector ID,
 #' and with four named columns indicating the following treatment steps:
 #'* nitrification, denitrification and P_elimination: `"TRUE"` or `"FALSE"` for STP nodes, and `"none"` for lakes or similar.
-#'* type_advanced_treatment: one of `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`, or any other (empty) string for lack of treatment or lake nodes.
+#'* type_advanced_treatment: one of `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`, or any other (empty) string for lack of treatment or for lake nodes.
 #'
 #' @param STP_elimination_rates Required for compound_elimination_method `"node_specific"`. 
 #' Numeric vector of length equal to ID, containing elimination fractions `[0, 1]` for each STP node. Set elements to NA (or 0) for lakes.

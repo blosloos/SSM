@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrap_table.r
 \name{wrap_table}
 \alias{wrap_table}
-\title{Wrapper to calculate minimum and maximum loads and concentrations from an table input and using \code{\link[=calc_load]{calc_load()}}}
+\title{Calculate ranges of compound loads and concentrations in a river network under different scenarios of sewage treatment.}
 \usage{
 wrap_table(
   input_table,
@@ -10,8 +10,6 @@ wrap_table(
   STP_reroute = TRUE,
   STP_filter_steps = TRUE,
   STP_discharge_per_capita = 400,
-  compound_name = "not_specified",
-  scenario_name = compound_name,
   compound_load_gramm_per_capita_and_day,
   compound_elimination_method = NULL,
   compound_elimination_STP = NULL,
@@ -19,7 +17,9 @@ wrap_table(
   add_absolute_load = FALSE,
   use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
   use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
-  add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
+  add_columns_from_input_table = NULL,
+  compound_name = "compound_not_specified",
+  scenario_name = compound_name,
   path_out = NULL,
   overwrite = TRUE,
   write_csv = TRUE,
@@ -52,7 +52,7 @@ Single-row dataframe with elimination fractions \verb{[0, 1]} for the following 
 \item combi
 \item ozonation
 \item PAC
-\item undefined
+\item undefined: placeholder for yet unspecified but scheduled advanced treatment, e.g., a mean elimination fraction for GAC, combi, ozonation and PAC.
 }}
 
 \item{with_lake_elimination}{Logical. Include elimination by lakes? Defaults to TRUE.}
@@ -60,32 +60,84 @@ Single-row dataframe with elimination fractions \verb{[0, 1]} for the following 
 \item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
 via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
 
-\item{path_out}{NULL (default) or string containing path for writing csv or Excel.}
+\item{use_columns_local_discharge}{Character vector with two column names from \code{input_table} for minimum and maximum discharge just downstream of an STP or lake. The defaults is \code{c("Q347_L_s_min", "Q347_L_s_max")}.}
+
+\item{use_STP_elimination_rate}{Character vector with two column names from \code{input_table} for minimum and maximum STP-specific elimination rates,
+required for compound_elimination_method \code{"node_specific"}. Defaults to \code{c("STP_elimination_min", "STP_elimination_max")}.}
+
+\item{add_columns_from_input_table}{Character vector with names of columns from \code{input_table} to be attached and exported with the results table.}
+
+\item{compound_name}{Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv.}
+
+\item{scenario_name}{Character string defaulting to \code{compound_name}. Name of the exported csv or Excel file path_out is not NULL.}
+
+\item{path_out}{NULL (default) or string containing folder path for writing csv or Excel (not containing the file name, cp. \code{scenario_name}).}
 
 \item{overwrite}{Logical, used if path_out is not NULL. Overwrite any existing file? Defaults to TRUE.}
 
-\item{write_csv}{Logical, used if path_out is not NULL. Default to TRUE, else exports an Excel file.}
+\item{write_csv}{Logical, used if path_out is not NULL. Defaults to TRUE to write both exported files as csv, else exports one of these as Excel file (cp. return value section).}
 
 \item{use_sep_csv}{String for csv sperataror, used if path_out is not NULL.}
 }
 \value{
-A dataframe or two file outputs to
-. One with the following columns:
+This function either returns a dataframe (if \code{path_out} is not specified) or saves two file named \code{scenario_name_topo_matrix} and
+\code{scenario_name} (or, if not provided, \code{compound_name}) into folder \code{path_out}.
+The first is always a csv format and contains the topology (i.e. routing) matrix used for the calculations.
+The second file is either a csv of Excel format (depending on \code{write_csv}) with the following result columns:
+\itemize{
+\item \code{ID}: Node IDs of STPs and lakes
+\item \code{inhabitants_cumulated}: cumulated number of inhabitants just downstream of each STP or lake
+\item \code{STP_local_discharge_L_s}: product of inhabitants and STP_discharge_per_capita from each STP \verb{[l / s]}
+\item \code{STP_cumulated_discharge_L_s}: cumulated product of inhabitants and STP_discharge_per_capita just downstream each STP or lake node \verb{[l / s]}
+\item \code{node_count_cumulated}: cumulated number of nodes upstream of a each STP or lake node
+\item \code{Fraction_STP_discharge_of_river_local}: STP_local_discharge_L_s divided by the local discharge (i.e., first column in argument \code{use_columns_local_discharge})
+\item \code{Fraction_STP_discharge_of_river_cumulated}: STP_cumulated_discharge_L_s divided by the local discharge (i.e., first column in argument \code{use_columns_local_discharge})
+\item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated}: local discharge (i.e., first column in argument \code{use_columns_local_discharge}) divided by
+the sewage discharge from STPs without advanced treatments.
+\item \code{Fraction_STP_discharge_of_river_local_includingSTPdischarge}: STP_local_discharge_L_s divided by the sum of local discharge (i.e., first column in argument
+\code{use_columns_local_discharge}) and \code{STP_local_discharge_L_s}
+\item \code{Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge}: STP_cumulated_discharge_L_s divided by the sum of local discharge (i.e., first column in argument
+\code{use_columns_local_discharge}) and \code{STP_local_discharge_L_s}
+\item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge}: STP_cumulated_discharge_L_s from STPs without advanced treatment divided by
+the sum of local discharge (i.e., first column in argument \code{use_columns_local_discharge}) and \code{STP_local_discharge_L_s}
+\item \code{Fraction_of_wastewater_only_C_removal}: fraction of cumulated STP discharge from STPs without nitrification, denitrification and any advanced treatment step, just downstream of each STP or lake.
+\item \code{Fraction_of_wastewater_nitrification}: fraction of cumulated STP discharge from STPs with nitrification, but without denitrification and any advanced treatment step, just downstream of each STP or lake.
+\item \code{Fraction_of_wastewater_denitrification}: fraction of cumulated STP discharge from STPs with nitrification and denitrification but without any advanced treatment step, just downstream of each STP or lake.
+\item \code{Fraction_of_wastewater_advanced_treatment}: fraction of cumulated STP discharge from STPs with an advanced treatment step, just downstream of each STP or lake.
+\item columns \code{input_load_local_g_d_max} and \code{input_load_local_g_d_min}: maximum and minimum
+\item columns \code{load_local_g_d_max} and \code{load_local_g_d_min}: maximum and minimum
+\item columns \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min}: maximum and minimum
+\item columns \code{conc_local_ug_L_max} and \code{conc_local_ug_L_min}: maximum and minimum
+\item columns \code{conc_cumulated_ug_L_max} and \code{conc_cumulated_ug_L_min}: maximum and minimum
+}
 
-In case of the file output, the first rows also contain
+In case of the Excel file output, the first rows also contain the parameters and the \code{compound_name} used.
 }
 \description{
-input_table if provided, overwrites the following STP_arguments
-path_out
-add_absolute_load
+Wrapper function on \code{\link[=calc_load]{calc_load()}} to calculate minimum and maximum loads and concentrations of a compound in a river network from an input table
+containing information on sewage treatment plants (STPs) and lake nodes. \code{STP_scenario_year} allows simulations for different stages of advanced treatment
+or a rerouting of STPs.
+}
+\details{
+Check function \code{\link[=calc_load]{calc_load()}} for the underlying approach on calculating loads from human compound inputs and their elimination in STPs (cp. argument \code{compound_elimination_method})
+and lakes (cp. \code{with_lake_elimination}).
+Using \link{table_input}, this wrapper extends this approach by estimating minimum and maximum loads and their aquatic concentrations.
+By using an \code{STP_scenario_year} and column \code{starting_year_advanced_treatment} in \link{input_table} (and possibly in combination with \code{STP_reroute}) data for different points in
+time can be simulated.
 }
 \note{
 In contrast to column \code{type_advanced_treatment} of argument \code{STP_treatment_steps} in function \code{\link[=calc_load]{calc_load()}},
 the same column in \code{input_table} may also contain the entry \code{"redirection"}, apart from \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}.
-It is when \code{STP_reroute} is set to TRUE.
+It redirects the influent from one STP to another \code{redirecting_STP_target_STP_ID} (another column in \link{input_table}) when \code{STP_reroute} is set to TRUE, in combination
+with argument \code{STP_scenario_year} and \code{starting_year_advanced_treatment} (yet another column in \link{input_table}) .
 }
 \examples{
-Bla.
+Bla. With add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
+
+
+
+
+
 
 }
 \seealso{

@@ -42,14 +42,14 @@ Single-row dataframe with elimination fractions \verb{[0, 1]} for the following 
 \item combi
 \item ozonation
 \item PAC
-\item undefined
+\item undefined: placeholder for yet unspecified but scheduled advanced treatment, e.g., a mean elimination fraction for GAC, combi, ozonation and PAC.
 }}
 
 \item{STP_treatment_steps}{Required for compound_elimination_method \code{"compound_specific"}. A dataframe of strings with number of rows equal to length of vector ID,
 and with four named columns indicating the following treatment steps:
 \itemize{
 \item nitrification, denitrification and P_elimination: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
-\item type_advanced_treatment: one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, or any other (empty) string for lack of treatment or lake nodes.
+\item type_advanced_treatment: one of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, or any other (empty) string for lack of treatment or for lake nodes.
 }}
 
 \item{STP_elimination_rates}{Required for compound_elimination_method \code{"node_specific"}.
