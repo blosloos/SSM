@@ -10,6 +10,7 @@ wrap_table(
   STP_reroute = TRUE,
   STP_filter_steps = TRUE,
   STP_discharge_per_capita = 400,
+  compound_name = "compound_not_specified",
   compound_load_gramm_per_capita_and_day,
   compound_elimination_method = NULL,
   compound_elimination_STP = NULL,
@@ -18,7 +19,6 @@ wrap_table(
   use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
   use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
   add_columns_from_input_table = NULL,
-  compound_name = "compound_not_specified",
   scenario_name = compound_name,
   path_out = NULL,
   overwrite = TRUE,
@@ -37,12 +37,14 @@ wrap_table(
 
 \item{STP_discharge_per_capita}{Single numeric value. Discharge per person and day \verb{[l / d]}.}
 
-\item{compound_load_gramm_per_capita_and_day}{Single numeric value. Amount of the compound excreted per person and day \verb{[g / d]}.}
+\item{compound_name}{Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv.}
+
+\item{compound_load_gramm_per_capita_and_day}{Vector of tow numeric value. Minimum and maximum amounts of the compound excreted per person and day \verb{[g / d]}.}
 
 \item{compound_elimination_method}{Strings \code{"compound_specific"} or \code{"node_specific"} on how to calculate compound elimination, cp. Details.}
 
 \item{compound_elimination_STP}{Required for compound_elimination_method \code{"compound_specific"}.
-Single-row dataframe with elimination fractions \verb{[0, 1]} for the following STP treatment steps aka column names:
+Dataframe with two rows for minium and maximum elimination fractions \verb{[0, 1]} for the following STP treatment steps aka column names:
 \itemize{
 \item COD_treatment
 \item nitrification
@@ -66,8 +68,6 @@ via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
 required for compound_elimination_method \code{"node_specific"}. Defaults to \code{c("STP_elimination_min", "STP_elimination_max")}.}
 
 \item{add_columns_from_input_table}{Character vector with names of columns from \code{input_table} to be attached and exported with the results table.}
-
-\item{compound_name}{Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv.}
 
 \item{scenario_name}{Character string defaulting to \code{compound_name}. Name of the exported csv or Excel file path_out is not NULL.}
 
@@ -104,14 +104,14 @@ the sum of local discharge (i.e., first column in argument \code{use_columns_loc
 \item \code{Fraction_of_wastewater_nitrification}: fraction of cumulated STP discharge from STPs with nitrification, but without denitrification and any advanced treatment step, just downstream of each STP or lake.
 \item \code{Fraction_of_wastewater_denitrification}: fraction of cumulated STP discharge from STPs with nitrification and denitrification but without any advanced treatment step, just downstream of each STP or lake.
 \item \code{Fraction_of_wastewater_advanced_treatment}: fraction of cumulated STP discharge from STPs with an advanced treatment step, just downstream of each STP or lake.
-\item columns \code{input_load_local_g_d_max} and \code{input_load_local_g_d_min}: maximum and minimum
-\item columns \code{load_local_g_d_max} and \code{load_local_g_d_min}: maximum and minimum
-\item columns \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min}: maximum and minimum
-\item columns \code{conc_local_ug_L_max} and \code{conc_local_ug_L_min}: maximum and minimum
-\item columns \code{conc_cumulated_ug_L_max} and \code{conc_cumulated_ug_L_min}: maximum and minimum
+\item columns \code{input_load_local_g_d_max} and \code{input_load_local_g_d_min}: maximum and minimum compound amount released into each STP \verb{[g / d]}, i.e., inhabitants * compound_load_gramm_per_capita_and_day
+\item columns \code{load_local_g_d_max} and \code{load_local_g_d_min}: maximum and minimum compound amount discharged from each STP after elimination \verb{[g / d]}
+\item columns \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min}: maximum and minimum cumulated compound amount just downstream of each STP or lake \verb{[g / d]}
+\item columns \code{conc_local_ug_L_max} and \code{conc_local_ug_L_min}: \code{load_local_g_d_max} and \code{load_local_g_d_min} divided local discharge (i.e., relevant min/max columns in argument \code{use_columns_local_discharge})
+\item columns \code{conc_cumulated_ug_L_max} and \code{conc_cumulated_ug_L_min}: \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min} divided local discharge (i.e., relevant min/max columns in argument \code{use_columns_local_discharge})
 }
 
-In case of the Excel file output, the first rows also contain the parameters and the \code{compound_name} used.
+In case of the Excel file output, the first rows in the spreadsheet also contain the parameters and the \code{compound_name} used.
 }
 \description{
 Wrapper function on \code{\link[=calc_load]{calc_load()}} to calculate minimum and maximum loads and concentrations of a compound in a river network from an input table
@@ -132,11 +132,39 @@ It redirects the influent from one STP to another \code{redirecting_STP_target_S
 with argument \code{STP_scenario_year} and \code{starting_year_advanced_treatment} (yet another column in \link{input_table}) .
 }
 \examples{
-Bla. With add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
 
+compound_load_gramm_per_capita_and_day <- c(100 * 1E-6,	500 * 1E-6)
 
+compound_elimination_STP <- data.frame(	
+	COD_treatment = c(0.4, 0.5),
+	nitrification = c(0.3, 0.6),
+	denitrification = c(0.15, 0.2),
+	P_elimination = c(0.1, 0.2),
+	GAC = c(0, 0.15),
+	combi = c(0, 0.05),
+	ozonation = c(0.4, 0.7),
+	PAC = c(0, 0.3),
+	undefined = c(0, 0.12)
+)
 
-
+results <- wrap_table(
+	input_table,
+	STP_scenario_year = 2030,
+	STP_reroute = TRUE,
+	STP_filter_steps = TRUE,
+	STP_discharge_per_capita = 400,
+	compound_name = "Diclofenac",
+	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
+	compound_elimination_method = "compound_specific",
+	compound_elimination_STP = compound_elimination_STP,
+	with_lake_elimination = TRUE,
+	add_absolute_load = TRUE,
+	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
+	add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
+	scenario_name = compound_name,	
+	path_out = NULL
+)
 
 
 }

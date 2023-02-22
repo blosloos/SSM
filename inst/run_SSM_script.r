@@ -75,51 +75,27 @@ add_absolute_load <- TRUE					# additiert absolute Fracht aus Spalte additional_
 
 wrap_table(
 
-	model_input_table = model_input_table,									
+	input_table = input_table,									
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,									
 	STP_filter_steps = TRUE,							
 	STP_discharge_per_capita = 400,						
 	compound_name = compound_name,
-	scenario_name = compound_name,
-	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,				
-	compound_elimination_STP = compound_elimination_STP,					
-	compound_elimination_method = "micropollutants",	
+	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
+	compound_elimination_method = "node_specific",	
+	compound_elimination_STP = compound_elimination_STP,						
 	with_lake_elimination = TRUE,
 	add_absolute_load = TRUE,
 	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = use_columns_STP_elimination_rate,
-	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position"),
+	add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
+	scenario_name = compound_name,
 	path_out = path_out,									
 	overwrite = TRUE,
 	write_csv = TRUE,									
 	use_sep_csv = ","
 	
 )
-
-
-
-	model_input_table = model_input_table									
-	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1])
-	STP_reroute = FALSE
-	STP_filter_steps = FALSE
-	STP_discharge_per_capita = 400
-	compound_name = compound_name
-	scenario_name = compound_name
-	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day
-	compound_elimination_STP = compound_elimination_STP	
-	compound_elimination_method = "micropollutants"
-	with_lake_elimination = FALSE
-	add_absolute_load = FALSE
-	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max")
-	use_STP_elimination_rate = use_columns_STP_elimination_rate
-	add_columns_from_model_input_table = c("ID_next", "X_position", "Y_position")
-	path_out = path_out
-	overwrite = TRUE
-	write_csv = TRUE
-	use_sep_csv = " "
-
-
 
 
 

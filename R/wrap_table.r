@@ -7,11 +7,25 @@
 #' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
 #' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
 #' @param STP_discharge_per_capita Single numeric value. Discharge per person and day `[l / d]`. 
+#' @param compound_name Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv. 
+#' @param compound_load_gramm_per_capita_and_day Vector of tow numeric value. Minimum and maximum amounts of the compound excreted per person and day `[g / d]`.
+#'
+#' @param compound_elimination_STP Required for compound_elimination_method `"compound_specific"`. 
+#' Dataframe with two rows for minium and maximum elimination fractions `[0, 1]` for the following STP treatment steps aka column names:
+#'* COD_treatment
+#'* nitrification
+#'* denitrification
+#'* P_elimination
+#'* GAC
+#'* combi
+#'* ozonation
+#'* PAC
+#'* undefined: placeholder for yet unspecified but scheduled advanced treatment, e.g., a mean elimination fraction for GAC, combi, ozonation and PAC.
+#'
 #' @param use_columns_local_discharge Character vector with two column names from `input_table` for minimum and maximum discharge just downstream of an STP or lake. The defaults is `c("Q347_L_s_min", "Q347_L_s_max")`. 
 #' @param use_STP_elimination_rate Character vector with two column names from `input_table` for minimum and maximum STP-specific elimination rates, 
 #' required for compound_elimination_method `"node_specific"`. Defaults to `c("STP_elimination_min", "STP_elimination_max")`. 
 #' @param add_columns_from_input_table Character vector with names of columns from `input_table` to be attached and exported with the results table.  
-#' @param compound_name Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv. 
 #' @param scenario_name Character string defaulting to `compound_name`. Name of the exported csv or Excel file path_out is not NULL. 
 #' @param path_out NULL (default) or string containing folder path for writing csv or Excel (not containing the file name, cp. `scenario_name`). 
 #' @param overwrite Logical, used if path_out is not NULL. Overwrite any existing file? Defaults to TRUE.
@@ -81,29 +95,42 @@
 #'
 #' @seealso [calc_load()], [input_table]
 #'
-#' @examples Bla. With add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
+#' @examples
+#'
+#' compound_load_gramm_per_capita_and_day <- c(100 * 1E-6,	500 * 1E-6)
+#'
+#' compound_elimination_STP <- data.frame(	
+#'		COD_treatment = c(0.4, 0.5),
+#'		nitrification = c(0.3, 0.6),
+#'		denitrification = c(0.15, 0.2),
+#'		P_elimination = c(0.1, 0.2),
+#'		GAC = c(0, 0.15),
+#'		combi = c(0, 0.05),
+#'		ozonation = c(0.4, 0.7),
+#'		PAC = c(0, 0.3),
+#'		undefined = c(0, 0.12)
+#' )
+#'
+#' results <- wrap_table(
+#'		input_table,
+#'		STP_scenario_year = 2030,
+#'		STP_reroute = TRUE,
+#'		STP_filter_steps = TRUE,
+#'		STP_discharge_per_capita = 400,
+#'		compound_name = "Diclofenac",
+#'		compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
+#'		compound_elimination_method = "compound_specific",
+#'		compound_elimination_STP = compound_elimination_STP,
+#'		with_lake_elimination = TRUE,
+#'		add_absolute_load = TRUE,
+#'		use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+#'		use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
+#'		add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
+#'		scenario_name = compound_name,	
+#'		path_out = NULL
+#')
 #'
 #'
-#'
-#'
-#'
-#'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 wrap_table <- function(
@@ -112,6 +139,7 @@ wrap_table <- function(
 	STP_reroute = TRUE,
 	STP_filter_steps = TRUE,
 	STP_discharge_per_capita = 400,
+	compound_name = "compound_not_specified",
 	compound_load_gramm_per_capita_and_day,
 	compound_elimination_method = NULL,
 	compound_elimination_STP = NULL,
@@ -120,7 +148,6 @@ wrap_table <- function(
 	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
 	add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
-	compound_name = "compound_not_specified",
 	scenario_name = compound_name,	
 	path_out = NULL,
 	overwrite = TRUE,
@@ -161,11 +188,10 @@ wrap_table <- function(
 	if(!is.numeric(inhabitants)) stop("Problem in wrap_table: inhabitants must be numeric.")
 	inhabitants[is.na(inhabitants)] <- 0	# e.g. for lakes
 	if(!identical(length(ID), length(ID_next), length(inhabitants))) stop("Problem in wrap_table: ID, ID_next and inhabitants must be of equal length.")
-	if(!overwrite & !is.logical(path_out)) if(file.exists(path_out)) stop("Problem in wrap_table: file at path_out already exists; remove it or use overwrite = TRUE.")
-	if(!file.exists(path_out)) dir.create(path = path_out)		
-	
-# <- deal with missing discharge
-	
+	if(!is.null(path_out)){
+		if(!overwrite) if(file.exists(path_out)) stop("Problem in wrap_table: file at path_out already exists; remove it or use overwrite = TRUE.")
+		if(!file.exists(path_out)) dir.create(path = path_out)		
+	}
 	###############################################			
 	
 	###############################################
@@ -309,7 +335,7 @@ wrap_table <- function(
 		absolute_loads = absolute_loads_loop,
 		return_data = "matrix"	
 	)
-	if(!is.logical(path_out)){
+	if(!is.null(path_out)){
 		done_write <- try({
 		
 			topo_matrix_export <- topo_matrix
