@@ -97,41 +97,6 @@ wrap_table(
 	
 )
 
-
-
-
-
-# not used in script
-
-
-
-
-	STP_id = NULL
-	STP_id_next = NULL
-	STP_amount_inhabitants = NULL
-	STP_local_discharge_river = NULL					# discharge in river at STP
-	STP_treatment_steps = NULL
-	STP_amount_people_local = NULL						# amount of people at STP
-	
-	
-	compound_load_total = FALSE 						# [kg / a]
-
-
-	compound_excreted = 1								# fraction excreted and discharged, set to 1 to ignore
-	
-	STP_amount_hospital_beds
-
-	STP_fraction_hospital
-
-hospital_beds_total
-
-	path_out = FALSE,									# if FALSE, return data.frame
-	overwrite = TRUE,
-	write_csv = TRUE,									# else, exports an excel file
-
-	# deprecated:
-	compound_elimination_STP$COD_treatment
-
 ################################################################
 
 
