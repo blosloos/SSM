@@ -95,7 +95,7 @@
 #'
 #' @seealso [calc_load()], [input_table]
 #'
-#' @examples
+#' @examples 
 #'
 #' compound_load_gramm_per_capita_and_day <- c(100 * 1E-6,	500 * 1E-6)
 #'
@@ -112,7 +112,7 @@
 #' )
 #'
 #' results <- wrap_table(
-#'		input_table,
+#'		input_table = input_table,
 #'		STP_scenario_year = 2030,
 #'		STP_reroute = TRUE,
 #'		STP_filter_steps = TRUE,
@@ -131,6 +131,15 @@
 #')
 #'
 #'
+#' # Above [input_table] is lazy-loaded for this package.
+#' # In addition, an Excel version model_inputs.xlsx of [input_table] exists in the extdata folder of this package, to be found under:
+#' list.files(system.file("extdata", package = "SSM"))
+#' # The first two rows contain comments, and must be skipped when loading via:
+#' xlsxFile_path <- file.path( system.file("extdata", package = "SSM"), "model_inputs.xlsx")
+#' input_table <- openxlsx:::read.xlsx(xlsxFile = xlsxFile_path, sheet = "model_inputs", startRow = 3)
+#'
+#'
+
 
 
 wrap_table <- function(

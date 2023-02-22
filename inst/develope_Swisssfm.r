@@ -22,9 +22,6 @@ document(pkg = "C:/PART_4/MS/R_packages/SSM", roclets = NULL, quiet = FALSE)
 
 
 
-
-
-
 unload(pkg = "C:/PART_4/MS/R_packages/SSM")
 clean_dll(pkg = "C:/PART_4/MS/R_packages/SSM")
 
