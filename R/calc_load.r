@@ -89,7 +89,7 @@
 #' )
 #' 
 #' STP_treatment_steps <- cbind(	# define presence of treatment steps
-#' 	"nitrification" = c("TRUE", "TRUE", "FALSE", "none", "TRUE"),
+#'  "nitrification" = c("TRUE", "TRUE", "FALSE", "none", "TRUE"),
 #' 	"denitrification" = c("TRUE", "FALSE", "FALSE", "none", "TRUE"), 
 #' 	"P_elimination" = c("TRUE", "TRUE", "TRUE", "none", "TRUE"),
 #' 	"type_advanced_treatment" = c("GAC", "", "", "", "ozonation")
@@ -98,15 +98,15 @@
 #' lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
 #' 
 #'calc_load(
-#'	ID = ID, 
-#'	ID_next = ID_next, 
-#'	inhabitants = inhabitants,	
-#'	compound_load_gramm_per_capita_and_day = 100 * 1E-6,		
-#'	compound_elimination_method = "compound_specific",
-#'	compound_elimination_STP = compound_elimination_STP,
-#'	STP_treatment_steps = STP_treatment_steps,
-#'	with_lake_elimination = TRUE, 
-#'	lake_eliminination_rates = lake_eliminination_rates
+#'  ID = ID, 
+#'  ID_next = ID_next, 
+#'  inhabitants = inhabitants,	
+#'  compound_load_gramm_per_capita_and_day = 100 * 1E-6,		
+#'  compound_elimination_method = "compound_specific",
+#'  compound_elimination_STP = compound_elimination_STP,
+#'  STP_treatment_steps = STP_treatment_steps,
+#'  with_lake_elimination = TRUE, 
+#'  lake_eliminination_rates = lake_eliminination_rates
 #')
 #'
 #'

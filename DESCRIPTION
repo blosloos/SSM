@@ -5,7 +5,7 @@ Version: 2.3
 Date: 2023-02-22
 Author: Martin Loos, Rebekka Gulde
 Maintainer: Martin Loos <mloos@envibee.ch>
-Description: Catchment-based micropollutant routing model for (swiss) sewage treatment plants
+Description: Catchment-based micropollutant routing model for sewage treatment plants
 License: GNU General Public License v3.0
 Imports: openxlsx
 Roxygen: list(markdown = TRUE)
