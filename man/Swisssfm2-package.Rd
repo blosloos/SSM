@@ -10,10 +10,18 @@
 }
 \details{
 
-The DESCRIPTION file:
 \packageDESCRIPTION{SSM}
 \packageIndices{SSM}
-~~ An overview of how to use the package, including the most important functions ~~
+
+Calculate local and cumulated loads of a compound in a river network, following release from human intake and subsequent elimination in sewage treatment plants (STPs)
+and any lakes downstream of those STPs.
+
+Function [calc_load()] is the workhorse of this package, and its documentation should be consulted first to understand what this package does.
+[make_topology()] is merely an internal helper function for [calc_load()].
+
+Function [wrap_table()] is a wrapper function to [calc_load()]. It uses a table input to calculate minimum and maximum loads and concentrations,
+as well as different fractions of STP effluent in the river network.
+
 }
 \author{
 \packageAuthor{SSM}
@@ -21,14 +29,7 @@ The DESCRIPTION file:
 Maintainer: \packageMaintainer{SSM}
 }
 \references{
-~~ Literature or other references for background information ~~
+Ort et al. (ES&T, 2009, 43, pp. 3214-3220)
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R documentation directory ~~
+
 \keyword{ package }
-\seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
-\examples{
-~~ simple examples of the most important functions ~~
-}
