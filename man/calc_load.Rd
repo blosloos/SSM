@@ -21,7 +21,8 @@ calc_load(
 )
 }
 \arguments{
-\item{ID}{Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.}
+\item{ID}{Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.
+If not specified (the default), a sequential ID is generated.}
 
 \item{ID_next}{Character or integer vector of length equal to ID, containing the ID of the next node directly downstream of each node (if any, else set entry to NA).}
 
@@ -58,7 +59,7 @@ Numeric vector of length equal to ID, containing elimination fractions \verb{[0,
 \item{with_lake_elimination}{Logical. Include elimination by lakes? Defaults to TRUE.}
 
 \item{lake_eliminination_rates}{Numeric vector of length equal equal to ID, containing elimination fractions \verb{[0, 1]} for each lake node. Set elements to NA (or 0) for STPs.
-Set elements to NA (or 0) for STPs. Only used when with_lake_elimination is set to TRUE.}
+Only used when with_lake_elimination is set to TRUE.}
 
 \item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
 via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
@@ -114,7 +115,7 @@ Note that the \code{absolute_loads}, if used, are not subjected to any eliminati
 
 ID <- c(1, 2, 3, 4, 5)	# nodes: STP, STP, STP, lake, STP
 ID_next <- c(4, 3, 4, 5, NA)	# node with ID = 5 has no downstream node (hence ID_next = NA)
-inhabitants <- c(403, 150, 324, NA, 172)	# all excertion is cleaned in STPs, none hoes into the lake
+inhabitants <- c(403, 150, 324, NA, 172)	# NA because no inhabitants discharge into the lake
 
 compound_elimination_STP <- data.frame(
 	COD_treatment = 0.5, nitrification = 0.6,
@@ -124,7 +125,7 @@ compound_elimination_STP <- data.frame(
 )
 
 STP_treatment_steps <- cbind(	# define presence of treatment steps
-	"nitrification" = c("TRUE", "TRUE", "FALSE", "none", "TRUE"),
+ "nitrification" = c("TRUE", "TRUE", "FALSE", "none", "TRUE"),
 	"denitrification" = c("TRUE", "FALSE", "FALSE", "none", "TRUE"), 
 	"P_elimination" = c("TRUE", "TRUE", "TRUE", "none", "TRUE"),
 	"type_advanced_treatment" = c("GAC", "", "", "", "ozonation")
@@ -133,15 +134,15 @@ STP_treatment_steps <- cbind(	# define presence of treatment steps
 lake_eliminination_rates <- c(NA, NA, NA, 0.1, NA)	# set only for lake, NA otherwise
 
 calc_load(
-ID = ID, 
-ID_next = ID_next, 
-inhabitants = inhabitants,	
-compound_load_gramm_per_capita_and_day = 100 * 1E-6,		
-compound_elimination_method = "compound_specific",
-compound_elimination_STP = compound_elimination_STP,
-STP_treatment_steps = STP_treatment_steps,
-with_lake_elimination = TRUE, 
-lake_eliminination_rates = lake_eliminination_rates
+ ID = ID, 
+ ID_next = ID_next, 
+ inhabitants = inhabitants,	
+ compound_load_gramm_per_capita_and_day = 100 * 1E-6,		
+ compound_elimination_method = "compound_specific",
+ compound_elimination_STP = compound_elimination_STP,
+ STP_treatment_steps = STP_treatment_steps,
+ with_lake_elimination = TRUE, 
+ lake_eliminination_rates = lake_eliminination_rates
 )
 
 

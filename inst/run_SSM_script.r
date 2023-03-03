@@ -86,7 +86,7 @@ wrap_table(
 	compound_elimination_STP = compound_elimination_STP,						
 	with_lake_elimination = TRUE,
 	add_absolute_load = TRUE,
-	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+	use_columns_local_river_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = use_columns_STP_elimination_rate,
 	add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
 	scenario_name = compound_name,

@@ -2,21 +2,21 @@
 % Please edit documentation in R/wrap_table.r
 \name{wrap_table}
 \alias{wrap_table}
-\title{Calculate min/max ranges of compound loads and concentrations in a river network under different scenarios of sewage treatment.}
+\title{Calculate ranges of compound loads and concentrations in a river network under different scenarios of sewage treatment.}
 \usage{
 wrap_table(
   input_table,
   STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
   STP_reroute = TRUE,
   STP_filter_steps = TRUE,
-  STP_discharge_per_capita = 400,
+  STP_discharge_per_capita = 375,
   compound_name = "compound_not_specified",
   compound_load_gramm_per_capita_and_day,
   compound_elimination_method = NULL,
   compound_elimination_STP = NULL,
   with_lake_elimination = FALSE,
   add_absolute_load = FALSE,
-  use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+  use_columns_local_river_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
   use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
   add_columns_from_input_table = NULL,
   scenario_name = compound_name,
@@ -33,7 +33,7 @@ wrap_table(
 
 \item{STP_reroute}{Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.}
 
-\item{STP_filter_steps}{Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.}
+\item{STP_filter_steps}{Logical. Ignore STP treatment steps from a given \code{STP_scenario_year} onwards (cp. details)? Defaults to TRUE.}
 
 \item{STP_discharge_per_capita}{Single numeric value. Discharge per person and day \verb{[l / d]}.}
 
@@ -62,7 +62,8 @@ Dataframe with two rows for minium and maximum elimination fractions \verb{[0, 1
 \item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
 via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
 
-\item{use_columns_local_discharge}{Character vector with two column names from \code{input_table} for minimum and maximum discharge just downstream of an STP or lake. The defaults is \code{c("Q347_L_s_min", "Q347_L_s_max")}.}
+\item{use_columns_local_river_discharge}{Character vector with two column names from \code{input_table} for minimum and maximum river discharge \verb{[l / s]} just downstream of an STP or lake.
+The defaults is \code{c("Q347_L_s_min", "Q347_L_s_max")}.}
 
 \item{use_STP_elimination_rate}{Character vector with two column names from \code{input_table} for minimum and maximum STP-specific elimination rates,
 required for compound_elimination_method \code{"node_specific"}. Defaults to \code{c("STP_elimination_min", "STP_elimination_max")}.}
@@ -86,20 +87,20 @@ The first is always a csv format and contains the topology (i.e. routing) matrix
 The second file is either a csv of Excel format (depending on \code{write_csv}) with the following result columns:
 \itemize{
 \item \code{ID}: Node IDs of STPs and lakes
-\item \code{inhabitants_cumulated}: cumulated number of inhabitants just downstream of each STP or lake
+\item \code{inhabitants_cumulated}: cumulated number of inhabitants just downstream of each STP or lake (these numbers are not affected by elimination).
 \item \code{STP_local_discharge_L_s}: product of inhabitants and STP_discharge_per_capita from each STP \verb{[l / s]}
 \item \code{STP_cumulated_discharge_L_s}: cumulated product of inhabitants and STP_discharge_per_capita just downstream each STP or lake node \verb{[l / s]}
 \item \code{node_count_cumulated}: cumulated number of nodes upstream of a each STP or lake node
-\item \code{Fraction_STP_discharge_of_river_local}: STP_local_discharge_L_s divided by the local discharge (i.e., first column in argument \code{use_columns_local_discharge})
-\item \code{Fraction_STP_discharge_of_river_cumulated}: STP_cumulated_discharge_L_s divided by the local discharge (i.e., first column in argument \code{use_columns_local_discharge})
-\item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated}: local discharge (i.e., first column in argument \code{use_columns_local_discharge}) divided by
+\item \code{Fraction_STP_discharge_of_river_local}: STP_local_discharge_L_s divided by the local river discharge (i.e., first column in argument \code{use_columns_local_river_discharge})
+\item \code{Fraction_STP_discharge_of_river_cumulated}: STP_cumulated_discharge_L_s divided by the local river discharge (i.e., first column in argument \code{use_columns_local_river_discharge})
+\item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated}: local discharge (i.e., first column in argument \code{use_columns_local_river_discharge}) divided by
 the sewage discharge from STPs without advanced treatments.
-\item \code{Fraction_STP_discharge_of_river_local_includingSTPdischarge}: STP_local_discharge_L_s divided by the sum of local discharge (i.e., first column in argument
-\code{use_columns_local_discharge}) and \code{STP_local_discharge_L_s}
-\item \code{Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge}: STP_cumulated_discharge_L_s divided by the sum of local discharge (i.e., first column in argument
-\code{use_columns_local_discharge}) and \code{STP_local_discharge_L_s}
+\item \code{Fraction_STP_discharge_of_river_local_includingSTPdischarge}: STP_local_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument
+\code{use_columns_local_river_discharge}) and \code{STP_local_discharge_L_s}
+\item \code{Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge}: STP_cumulated_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument
+\code{use_columns_local_river_discharge}) and \code{STP_local_discharge_L_s}
 \item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge}: STP_cumulated_discharge_L_s from STPs without advanced treatment divided by
-the sum of local discharge (i.e., first column in argument \code{use_columns_local_discharge}) and \code{STP_local_discharge_L_s}
+the sum of local river discharge (i.e., first column in argument \code{use_columns_local_river_discharge}) and \code{STP_local_discharge_L_s}
 \item \code{Fraction_of_wastewater_only_C_removal}: fraction of cumulated STP discharge from STPs without nitrification, denitrification and any advanced treatment step, just downstream of each STP or lake.
 \item \code{Fraction_of_wastewater_nitrification}: fraction of cumulated STP discharge from STPs with nitrification, but without denitrification and any advanced treatment step, just downstream of each STP or lake.
 \item \code{Fraction_of_wastewater_denitrification}: fraction of cumulated STP discharge from STPs with nitrification and denitrification but without any advanced treatment step, just downstream of each STP or lake.
@@ -107,11 +108,11 @@ the sum of local discharge (i.e., first column in argument \code{use_columns_loc
 \item columns \code{input_load_local_g_d_max} and \code{input_load_local_g_d_min}: maximum and minimum compound amount released into each STP \verb{[g / d]}, i.e., inhabitants * compound_load_gramm_per_capita_and_day
 \item columns \code{load_local_g_d_max} and \code{load_local_g_d_min}: maximum and minimum compound amount discharged from each STP after elimination \verb{[g / d]}
 \item columns \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min}: maximum and minimum cumulated compound amount just downstream of each STP or lake \verb{[g / d]}
-\item columns \code{conc_local_ug_L_max} and \code{conc_local_ug_L_min}: \code{load_local_g_d_max} and \code{load_local_g_d_min} divided local discharge (i.e., relevant min/max columns in argument \code{use_columns_local_discharge})
-\item columns \code{conc_cumulated_ug_L_max} and \code{conc_cumulated_ug_L_min}: \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min} divided local discharge (i.e., relevant min/max columns in argument \code{use_columns_local_discharge})
+\item columns \code{conc_local_ug_L_max} and \code{conc_local_ug_L_min}: \code{load_local_g_d_max} and \code{load_local_g_d_min} divided by local river discharge (i.e., relevant min/max columns in argument \code{use_columns_local_river_discharge})
+\item columns \code{conc_cumulated_ug_L_max} and \code{conc_cumulated_ug_L_min}: \code{load_cumulated_g_d_max} and \code{load_cumulated_g_d_min} divided by local river discharge (i.e., relevant min/max columns in argument \code{use_columns_local_river_discharge})
 }
 
-In case of the Excel file output, the first rows in the spreadsheet also contain the parameters and the \code{compound_name} used.
+The first rows in the csv or the Excel spreadsheet also contain the parameters and the \code{compound_name} used.
 }
 \description{
 Wrapper function on \code{\link[=calc_load]{calc_load()}} to calculate minimum and maximum loads and concentrations of a compound in a river network from an input table
@@ -122,8 +123,8 @@ or a rerouting of STPs.
 Check function \code{\link[=calc_load]{calc_load()}} for the underlying approach on calculating loads from human compound inputs and their elimination in STPs (cp. argument \code{compound_elimination_method})
 and lakes (cp. \code{with_lake_elimination}).
 Using \link{table_input}, this wrapper extends this approach by estimating minimum and maximum loads and their aquatic concentrations.
-By using an \code{STP_scenario_year} and column \code{starting_year_advanced_treatment} in \link{input_table} (and possibly in combination with \code{STP_reroute}) data for different points in
-time can be simulated.
+By using an \code{STP_scenario_year}, \code{STP_filter_steps = TRUE} and column \code{starting_year_advanced_treatment} in \link{input_table} (and possibly in combination with \code{STP_reroute})
+data for different points in time can be simulated. That is, treatment steps that are built/operated at an STP after the used \code{STP_scenario_year} are ignored.
 }
 \note{
 In contrast to column \code{type_advanced_treatment} of argument \code{STP_treatment_steps} in function \code{\link[=calc_load]{calc_load()}},
@@ -152,14 +153,14 @@ results <- wrap_table(
 	STP_scenario_year = 2030,
 	STP_reroute = TRUE,
 	STP_filter_steps = TRUE,
-	STP_discharge_per_capita = 400,
+	STP_discharge_per_capita = 375,
 	compound_name = "Diclofenac",
 	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
 	compound_elimination_method = "compound_specific",
 	compound_elimination_STP = compound_elimination_STP,
 	with_lake_elimination = TRUE,
 	add_absolute_load = TRUE,
-	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+	use_columns_local_river_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
 	add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
 	scenario_name = compound_name,	

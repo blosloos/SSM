@@ -5,7 +5,7 @@
 \title{Calculate relational topology matrix for STP and lake nodes in a river network.}
 \usage{
 make_topology(
-  ID = FALSE,
+  ID = NULL,
   ID_next,
   NA_next_ignore = FALSE,
   insert_id_in_topo_matrix = FALSE,
@@ -13,7 +13,8 @@ make_topology(
 )
 }
 \arguments{
-\item{ID}{Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.}
+\item{ID}{Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.
+If not specified (the default), a sequential ID is generated.}
 
 \item{ID_next}{Character or integer vector of length equal to ID, containing the ID of the next node directly downstream of each node (if any, else set entry to NA).}
 
@@ -21,7 +22,7 @@ make_topology(
 
 \item{insert_id_in_topo_matrix}{Logical, default FALSE. Insert IDs into returned matrix.}
 
-\item{only_direct_upstream}{Logical, default FALSE. Return only STPs/lakes directly upstream?}
+\item{only_direct_upstream}{Logical, default FALSE. Return only the one STP or lake just directly upstream (if any)? Else, all STPs/lakes upstream are marked.}
 }
 \value{
 A matrix with dimensions and column/row names equal to argument ID. Columns contain 1
