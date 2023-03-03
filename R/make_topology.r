@@ -1,10 +1,11 @@
 #' Calculate relational topology matrix for STP and lake nodes in a river network.
 #'
-#' @param ID Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar.
+#' @param ID Character or integer vector containing the IDs of river network nodes such as sewage treatment plants (STPs), lakes or similar. 
+#' If not specified (the default), a sequential ID is generated.
 #' @param ID_next Character or integer vector of length equal to ID, containing the ID of the next node directly downstream of each node (if any, else set entry to NA).
 #' @param NA_next_ignore Logical. Set entries in vector ID_next which are not found in vector ID to NA? Else, throw an error (the default, FALSE).
 #' @param insert_id_in_topo_matrix Logical, default FALSE. Insert IDs into returned matrix.
-#' @param only_direct_upstream Logical, default FALSE. Return only STPs/lakes directly upstream?
+#' @param only_direct_upstream Logical, default FALSE. Return only the one STP or lake just directly upstream (if any)? Else, all STPs/lakes upstream are marked.
 #'
 #' @description Calculates a topology matrix to mark all sewage treatment plants (STPs) or lakes (or similar network nodes) upstream 
 #' of an individual STP/lake in a river network. Using only_direct_upstream, these can either be all nodes upstream, or only those in direct
@@ -22,7 +23,7 @@
 
 
 make_topology <- function(
-	ID = FALSE,
+	ID = NULL,
 	ID_next,
 	NA_next_ignore = FALSE,
 	insert_id_in_topo_matrix = FALSE,
@@ -31,12 +32,12 @@ make_topology <- function(
 
 	###############################################
 	# check inputs & defaults 
-	ID <- as.character(ID)
 	ID_next <- as.character(ID_next)
 	len <- length(ID_next)
-	if(is.logical(ID[1]) & !isTRUE(ID[1])) ID <- seq(len) else{ 
+	if(is.null(ID)) ID <- as.character(seq(len)) else{ 
 		if(length(ID) != len) stop("Problem in make_topology: ID_next and ID must be of same length") 
-		if(any(is.na(ID))) stop("Problem in make_topology: ID must not contain NAs") 
+		if(any(is.na(ID))) stop("Problem in make_topology: ID must not contain NAs")
+		ID <- as.character(ID)
 	}
 	if(NA_next_ignore){
 		if(any(!(ID_next[!is.na(ID_next)] %in% ID))) stop("Problem in make_topology: ID and ID_next mismatching")

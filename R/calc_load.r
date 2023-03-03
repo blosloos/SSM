@@ -25,7 +25,7 @@
 #' Numeric vector of length equal to ID, containing elimination fractions `[0, 1]` for each STP node. Set elements to NA (or 0) for lakes.
 #' @param with_lake_elimination Logical. Include elimination by lakes? Defaults to TRUE.
 #' @param lake_eliminination_rates Numeric vector of length equal equal to ID, containing elimination fractions `[0, 1]` for each lake node. Set elements to NA (or 0) for STPs. 
-#' Set elements to NA (or 0) for STPs. Only used when with_lake_elimination is set to TRUE.  
+#' Only used when with_lake_elimination is set to TRUE.  
 #' @param add_absolute_load Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated 
 #' via compound_load_gramm_per_capita_and_day plus compound_elimination_method?
 #' @param absolute_loads Numeric vector of length equal to ID with absolute loads to be added `[g / d]`. Used if add_absolute_load set to TRUE.
@@ -79,7 +79,7 @@
 #'
 #' ID <- c(1, 2, 3, 4, 5)	# nodes: STP, STP, STP, lake, STP
 #' ID_next <- c(4, 3, 4, 5, NA)	# node with ID = 5 has no downstream node (hence ID_next = NA)
-#' inhabitants <- c(403, 150, 324, NA, 172)	# all excertion is cleaned in STPs, none hoes into the lake
+#' inhabitants <- c(403, 150, 324, NA, 172)	# NA because no inhabitants discharge into the lake
 #' 
 #' compound_elimination_STP <- data.frame(
 #' 	COD_treatment = 0.5, nitrification = 0.6,

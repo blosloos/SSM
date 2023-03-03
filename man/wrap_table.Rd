@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrap_table.r
 \name{wrap_table}
 \alias{wrap_table}
-\title{Calculate ranges of compound loads and concentrations in a river network under different scenarios of sewage treatment.}
+\title{Calculate min/max ranges of compound loads and concentrations in a river network under different scenarios of sewage treatment.}
 \usage{
 wrap_table(
   input_table,

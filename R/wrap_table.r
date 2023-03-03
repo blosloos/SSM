@@ -5,7 +5,7 @@
 #' @param input_table Dataframe containing various information on sewage treatment plants and lakes, cp. example data [input_table]
 #' @param STP_scenario_year 4-digit integer value for the scenario year. Defaults to the current year.
 #' @param STP_reroute Logical. Reroute STPs up to STP_scenario_year? Defaults to TRUE.
-#' @param STP_filter_steps Logical. Filter STP treatment steps until a given STP_scenario_year? Defaults to TRUE.
+#' @param STP_filter_steps Logical. Ignore STP treatment steps from a given `STP_scenario_year` onwards (cp. details)? Defaults to TRUE.
 #' @param STP_discharge_per_capita Single numeric value. Discharge per person and day `[l / d]`. 
 #' @param compound_name Character string, name of the compound under consideration. Will be written into the exported Excel file, if such is used instead of csv. 
 #' @param compound_load_gramm_per_capita_and_day Vector of tow numeric value. Minimum and maximum amounts of the compound excreted per person and day `[g / d]`.
@@ -22,7 +22,8 @@
 #'* PAC
 #'* undefined: placeholder for yet unspecified but scheduled advanced treatment, e.g., a mean elimination fraction for GAC, combi, ozonation and PAC.
 #'
-#' @param use_columns_local_discharge Character vector with two column names from `input_table` for minimum and maximum discharge just downstream of an STP or lake. The defaults is `c("Q347_L_s_min", "Q347_L_s_max")`. 
+#' @param use_columns_local_river_discharge Character vector with two column names from `input_table` for minimum and maximum river discharge `[l / s]` just downstream of an STP or lake. 
+#' The defaults is `c("Q347_L_s_min", "Q347_L_s_max")`. 
 #' @param use_STP_elimination_rate Character vector with two column names from `input_table` for minimum and maximum STP-specific elimination rates, 
 #' required for compound_elimination_method `"node_specific"`. Defaults to `c("STP_elimination_min", "STP_elimination_max")`. 
 #' @param add_columns_from_input_table Character vector with names of columns from `input_table` to be attached and exported with the results table.  
@@ -42,8 +43,8 @@
 #' @details Check function [calc_load()] for the underlying approach on calculating loads from human compound inputs and their elimination in STPs (cp. argument `compound_elimination_method`) 
 #' and lakes (cp. `with_lake_elimination`).
 #' Using [table_input], this wrapper extends this approach by estimating minimum and maximum loads and their aquatic concentrations.
-#' By using an `STP_scenario_year` and column `starting_year_advanced_treatment` in [input_table] (and possibly in combination with `STP_reroute`) data for different points in 
-#' time can be simulated.
+#' By using an `STP_scenario_year`, `STP_filter_steps = TRUE` and column `starting_year_advanced_treatment` in [input_table] (and possibly in combination with `STP_reroute`) 
+#' data for different points in time can be simulated. That is, treatment steps that are built/operated at an STP after the used `STP_scenario_year` are ignored.
 #'
 #'
 #' @note In contrast to column `type_advanced_treatment` of argument `STP_treatment_steps` in function [calc_load()], 
@@ -58,23 +59,23 @@
 #' The second file is either a csv of Excel format (depending on `write_csv`) with the following result columns:
 #' 
 #'* `ID`: Node IDs of STPs and lakes
-#'* `inhabitants_cumulated`: cumulated number of inhabitants just downstream of each STP or lake
+#'* `inhabitants_cumulated`: cumulated number of inhabitants just downstream of each STP or lake (these numbers are not affected by elimination).
 #'* `STP_local_discharge_L_s`: product of inhabitants and STP_discharge_per_capita from each STP `[l / s]`
 #'* `STP_cumulated_discharge_L_s`: cumulated product of inhabitants and STP_discharge_per_capita just downstream each STP or lake node `[l / s]`
 #'* `node_count_cumulated`: cumulated number of nodes upstream of a each STP or lake node
-#'* `Fraction_STP_discharge_of_river_local`: STP_local_discharge_L_s divided by the local discharge (i.e., first column in argument `use_columns_local_discharge`)
-#'* `Fraction_STP_discharge_of_river_cumulated`: STP_cumulated_discharge_L_s divided by the local discharge (i.e., first column in argument `use_columns_local_discharge`)
-#'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated`: local discharge (i.e., first column in argument `use_columns_local_discharge`) divided by 
+#'* `Fraction_STP_discharge_of_river_local`: STP_local_discharge_L_s divided by the local river discharge (i.e., first column in argument `use_columns_local_river_discharge`)
+#'* `Fraction_STP_discharge_of_river_cumulated`: STP_cumulated_discharge_L_s divided by the local river discharge (i.e., first column in argument `use_columns_local_river_discharge`)
+#'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated`: local discharge (i.e., first column in argument `use_columns_local_river_discharge`) divided by 
 #' the sewage discharge from STPs without advanced treatments.
 #'
-#'* `Fraction_STP_discharge_of_river_local_includingSTPdischarge`: STP_local_discharge_L_s divided by the sum of local discharge (i.e., first column in argument 
-#' `use_columns_local_discharge`) and `STP_local_discharge_L_s`
+#'* `Fraction_STP_discharge_of_river_local_includingSTPdischarge`: STP_local_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument 
+#' `use_columns_local_river_discharge`) and `STP_local_discharge_L_s`
 #'
-#'* `Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge`: STP_cumulated_discharge_L_s divided by the sum of local discharge (i.e., first column in argument 
-#' `use_columns_local_discharge`) and `STP_local_discharge_L_s`
+#'* `Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge`: STP_cumulated_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument 
+#' `use_columns_local_river_discharge`) and `STP_local_discharge_L_s`
 #'
 #'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge`: STP_cumulated_discharge_L_s from STPs without advanced treatment divided by
-#' the sum of local discharge (i.e., first column in argument `use_columns_local_discharge`) and `STP_local_discharge_L_s`
+#' the sum of local river discharge (i.e., first column in argument `use_columns_local_river_discharge`) and `STP_local_discharge_L_s`
 #'
 #'* `Fraction_of_wastewater_only_C_removal`: fraction of cumulated STP discharge from STPs without nitrification, denitrification and any advanced treatment step, just downstream of each STP or lake.
 #'* `Fraction_of_wastewater_nitrification`: fraction of cumulated STP discharge from STPs with nitrification, but without denitrification and any advanced treatment step, just downstream of each STP or lake. 
@@ -87,11 +88,11 @@
 #'
 #'* columns `load_cumulated_g_d_max` and `load_cumulated_g_d_min`: maximum and minimum cumulated compound amount just downstream of each STP or lake `[g / d]`
 #'
-#'* columns `conc_local_ug_L_max` and `conc_local_ug_L_min`: `load_local_g_d_max` and `load_local_g_d_min` divided local discharge (i.e., relevant min/max columns in argument `use_columns_local_discharge`)
+#'* columns `conc_local_ug_L_max` and `conc_local_ug_L_min`: `load_local_g_d_max` and `load_local_g_d_min` divided by local river discharge (i.e., relevant min/max columns in argument `use_columns_local_river_discharge`)
 #'
-#'* columns `conc_cumulated_ug_L_max` and `conc_cumulated_ug_L_min`: `load_cumulated_g_d_max` and `load_cumulated_g_d_min` divided local discharge (i.e., relevant min/max columns in argument `use_columns_local_discharge`)
+#'* columns `conc_cumulated_ug_L_max` and `conc_cumulated_ug_L_min`: `load_cumulated_g_d_max` and `load_cumulated_g_d_min` divided by local river discharge (i.e., relevant min/max columns in argument `use_columns_local_river_discharge`)
 #'
-#' In case of the Excel file output, the first rows in the spreadsheet also contain the parameters and the `compound_name` used.
+#' The first rows in the csv or the Excel spreadsheet also contain the parameters and the `compound_name` used.
 #'
 #' @seealso [calc_load()], [input_table]
 #'
@@ -116,14 +117,14 @@
 #'		STP_scenario_year = 2030,
 #'		STP_reroute = TRUE,
 #'		STP_filter_steps = TRUE,
-#'		STP_discharge_per_capita = 400,
+#'		STP_discharge_per_capita = 375,
 #'		compound_name = "Diclofenac",
 #'		compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
 #'		compound_elimination_method = "compound_specific",
 #'		compound_elimination_STP = compound_elimination_STP,
 #'		with_lake_elimination = TRUE,
 #'		add_absolute_load = TRUE,
-#'		use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+#'		use_columns_local_river_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 #'		use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
 #'		add_columns_from_input_table = c("ID_next", "X_position", "Y_position"),
 #'		scenario_name = compound_name,	
@@ -147,14 +148,14 @@ wrap_table <- function(
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,
 	STP_filter_steps = TRUE,
-	STP_discharge_per_capita = 400,
+	STP_discharge_per_capita = 375,
 	compound_name = "compound_not_specified",
 	compound_load_gramm_per_capita_and_day,
 	compound_elimination_method = NULL,
 	compound_elimination_STP = NULL,
 	with_lake_elimination = FALSE,
 	add_absolute_load = FALSE,
-	use_columns_local_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
+	use_columns_local_river_discharge = c("Q347_L_s_min", "Q347_L_s_max"),
 	use_STP_elimination_rate = c("STP_elimination_min", "STP_elimination_max"),
 	add_columns_from_input_table = NULL, #c("ID_next", "X_position", "Y_position"),
 	scenario_name = compound_name,	
@@ -168,17 +169,17 @@ wrap_table <- function(
 	# checks / extract input_table columns
 	if(!identical(
 		length(compound_load_gramm_per_capita_and_day),
-		length(use_columns_local_discharge),
+		length(use_columns_local_river_discharge),
 		nrow(compound_elimination_STP)
-	)) stop("Problem in wrap_table: compound_load_gramm_per_capita_and_day, use_columns_local_discharge and the number of rows in compound_elimination_STP must be of equal length")	
-	if(length(compound_load_gramm_per_capita_and_day) != 2) stop("Problem in wrap_table: compound_load_gramm_per_capita_and_day, use_columns_local_discharge and the number of rows in compound_elimination_STP must have two entries")
+	)) stop("Problem in wrap_table: compound_load_gramm_per_capita_and_day, use_columns_local_river_discharge and the number of rows in compound_elimination_STP must be of equal length")	
+	if(length(compound_load_gramm_per_capita_and_day) != 2) stop("Problem in wrap_table: compound_load_gramm_per_capita_and_day, use_columns_local_river_discharge and the number of rows in compound_elimination_STP must have two entries")
 	if(nrow(compound_elimination_STP) != 2) stop("Problem in wrap_table: compound_elimination_STP must have two rows with min/max values")
 	if(length(compound_load_gramm_per_capita_and_day) == 2){
 		compound_load_gramm_per_capita_and_day <- sort(compound_load_gramm_per_capita_and_day,  decreasing = TRUE)
 		if(any(compound_elimination_STP[1, ] > compound_elimination_STP[2, ])) stop("Problem in wrap_table: compound_elimination_STP set incorrectly for range calculation")
-		if(any(input_table[, use_columns_local_discharge[1]] > input_table[, use_columns_local_discharge[2]], na.rm = TRUE)) stop("Problem in wrap_table: use_columns_local_discharge set incorrectly for range calculation")	
+		if(any(input_table[, use_columns_local_river_discharge[1]] > input_table[, use_columns_local_river_discharge[2]], na.rm = TRUE)) stop("Problem in wrap_table: use_columns_local_river_discharge set incorrectly for range calculation")	
 	}
-	use_columns_local_discharge_for_fractions <- use_columns_local_discharge[1]
+	use_columns_local_river_discharge_for_fractions <- use_columns_local_river_discharge[1]
 	if((compound_elimination_method == "node_specific") & (use_STP_elimination_rate[1] == FALSE)) stop("Problem in wrap_table: compound_elimination_method set to node_specific, but no STP columns for use_STP_elimination_rate defined. Please revise.")
 	if(!is.numeric(as.numeric(STP_scenario_year))) stop("Problem in wrap_table: STP_scenario_year not set correctly, please revise.")
 	if(!is.null(input_table) & !is.data.frame(input_table)) stop("Problem in wrap_table: input_table must be either NULL or a dataframe")
@@ -270,11 +271,11 @@ wrap_table <- function(
 	for(n in seq(2)){
 			
 		###########################################
-		use_columns_local_discharge_loop <- use_columns_local_discharge[n]
+		use_columns_local_river_discharge_loop <- use_columns_local_river_discharge[n]
 		cols_required <- c(		# all required columns available?
 			"ID", "ID_next", "inhabitants", 
 			"nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment",
-			"redirecting_STP_target_STP_ID", use_columns_local_discharge_loop, "lake_elimination_min", "lake_elimination_max"
+			"redirecting_STP_target_STP_ID", use_columns_local_river_discharge_loop, "lake_elimination_min", "lake_elimination_max"
 		)
 		if(compound_elimination_method == "node_specific"){
 			cols_required <- c(cols_required, use_STP_elimination_rate[n])
@@ -284,7 +285,7 @@ wrap_table <- function(
 			these_missing <- paste(cols_required[is.na(match(cols_required, names(input_table)))], collapse = ", ")
 			stop(paste0("Problem in wrap_table: input_table is missing these columns: ", these_missing))
 		}
-		STP_local_discharge_river_loop <- as.numeric(input_table[, use_columns_local_discharge_loop])
+		STP_local_discharge_river_loop <- as.numeric(input_table[, use_columns_local_river_discharge_loop])
 		if(compound_elimination_method == "node_specific"){
 			use_STP_elimination_loop <- as.numeric(input_table[, use_columns_STP_elimination_rate_loop])
 		}else use_STP_elimination_loop <- FALSE
@@ -367,7 +368,7 @@ wrap_table <- function(
 	STP_local_discharge_L_s  <- STP_amount_people_local * STP_discharge_per_capita / (24 * 60 * 60) 				# convert to [l/s]
 	STP_amount_people_cumulated <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local)
 	STP_cumulated_discharge_L_s <- STP_amount_people_cumulated * STP_discharge_per_capita / (24 * 60 * 60) 		# convert to [l/s]
-	STP_local_discharge_river <- as.numeric(input_table[, use_columns_local_discharge_for_fractions])
+	STP_local_discharge_river <- as.numeric(input_table[, use_columns_local_river_discharge_for_fractions])
 	Fraction_STP_discharge_of_river_local <- STP_local_discharge_L_s  / STP_local_discharge_river
 	Fraction_STP_discharge_of_river_cumulated <- STP_cumulated_discharge_L_s / STP_local_discharge_river
 	Fraction_STP_discharge_of_river_local_includingSTPdischarge <- STP_local_discharge_L_s  / (STP_local_discharge_river + STP_local_discharge_L_s)
@@ -557,10 +558,10 @@ wrap_table <- function(
 		result_table[3, 19] <- as.character(STP_filter_steps)
 		result_table[2, 20] <- "lake elimination enabled?"
 		result_table[3, 20] <- paste(with_lake_elimination, collapse = ", ")	
-		result_table[2, 21] <- "use_columns_local_discharge"		
-		result_table[3, 21] <- paste(use_columns_local_discharge, collapse = ", ")	
-		result_table[2, 22] <- "use_columns_local_discharge_for_fractions"		
-		result_table[3, 22] <- paste(use_columns_local_discharge_for_fractions, collapse = ", ")	
+		result_table[2, 21] <- "use_columns_local_river_discharge"		
+		result_table[3, 21] <- paste(use_columns_local_river_discharge, collapse = ", ")	
+		result_table[2, 22] <- "use_columns_local_river_discharge_for_fractions"		
+		result_table[3, 22] <- paste(use_columns_local_river_discharge_for_fractions, collapse = ", ")	
 		result_table[2, 23] <- "STP_discharge_per_capita"		
 		result_table[3, 23] <- as.character(STP_discharge_per_capita)
 
