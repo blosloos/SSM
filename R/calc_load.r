@@ -27,7 +27,7 @@
 #' @param lake_eliminination_rates Numeric vector of length equal equal to ID, containing elimination fractions `[0, 1]` for each lake node. Set elements to NA (or 0) for STPs. 
 #' Only used when with_lake_elimination is set to TRUE.  
 #' @param add_absolute_load Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated 
-#' via compound_load_gramm_per_capita_and_day plus compound_elimination_method?
+#' via `compound_load_gramm_per_capita_and_day` plus `compound_elimination_method`?
 #' @param absolute_loads Numeric vector of length equal to ID with absolute loads to be added `[g / d]`. Used if add_absolute_load set to TRUE.
 #' @param return_data Strings `"loads"` (the default) or `"matrix"` to return either the calculated loads or the underlying node routing matrix.
 #'
@@ -59,6 +59,7 @@
 #' Optionally, and in a fourth stage, these cumulated loads are further degraded in lakes (arguments `with_lake_elimination` and `lake_eliminination_rates`) 
 #' or can receive additional absolut inputs via arguments `add_absolute_load` and `absolute_loads` (and which are not subject to any elimination). 
 #' For the lake elimination, all loads of upstream STPs are first summed and then reduced by the lake-specific `lake_eliminination_rates`.
+#' To only use absolute loads and no STP-degradation inputs, simply set `compound_load_gramm_per_capita_and_day` to 0.
 #'
 #' The `"compound_specific"` elimination rates are set as a product, and as far as they are relevant at each STP based on input `STP_treatment_steps`.
 #' If a treatment step is not present at an STP, the concerned entry in `compound_elimination_STP` is not multiplied into this product, except for   

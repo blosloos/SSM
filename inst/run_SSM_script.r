@@ -58,7 +58,7 @@ use_columns_local_discharge_for_fractions <- "Q347_L_s_min"
 # Welche Spalten enthalten ARA-spezifische Eliminationsraten, kleinerer und grösserer Wert? 
 use_columns_STP_elimination_rate <- c("STP_elimination_min", "STP_elimination_max")
 
-STP_discharge_per_capita <- 400
+STP_discharge_per_capita <- 375
 STP_scenario_year <- 2030
 STP_reroute <- FALSE						# Umleitungen für STP_scenario_year berücksichtigen?
 
@@ -79,7 +79,7 @@ wrap_table(
 	STP_scenario_year = as.numeric(strsplit(as.character(Sys.Date()), "-")[[1]][1]),
 	STP_reroute = TRUE,									
 	STP_filter_steps = TRUE,							
-	STP_discharge_per_capita = 400,						
+	STP_discharge_per_capita = STP_discharge_per_capita,						
 	compound_name = compound_name,
 	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
 	compound_elimination_method = "node_specific",	

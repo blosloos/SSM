@@ -51,6 +51,8 @@
 #' the same column in `input_table` may also contain the entry `"redirection"`, apart from `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`.
 #' It redirects the influent from one STP to another `redirecting_STP_target_STP_ID` (another column in [input_table]) when `STP_reroute` is set to TRUE, in combination
 #' with argument `STP_scenario_year` and `starting_year_advanced_treatment` (yet another column in [input_table]) .
+#' 
+#' To only use absolute loads and no STP-degradation as compound input, simply set one or both values in `compound_load_gramm_per_capita_and_day` to 0.
 #'
 #'
 #' @returns This function either returns a dataframe (if `path_out` is not specified) or saves two file named `scenario_name_topo_matrix` and
@@ -65,8 +67,8 @@
 #'* `node_count_cumulated`: cumulated number of nodes upstream of a each STP or lake node
 #'* `Fraction_STP_discharge_of_river_local`: STP_local_discharge_L_s divided by the local river discharge (i.e., first column in argument `use_columns_local_river_discharge`)
 #'* `Fraction_STP_discharge_of_river_cumulated`: STP_cumulated_discharge_L_s divided by the local river discharge (i.e., first column in argument `use_columns_local_river_discharge`)
-#'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated`: local discharge (i.e., first column in argument `use_columns_local_river_discharge`) divided by 
-#' the sewage discharge from STPs without advanced treatments.
+#'* `Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated`: STP_cumulated_discharge_L_s from STPs without advanced treatment divided by
+#' the local river discharge (i.e., first column in argument `use_columns_local_river_discharge`)
 #'
 #'* `Fraction_STP_discharge_of_river_local_includingSTPdischarge`: STP_local_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument 
 #' `use_columns_local_river_discharge`) and `STP_local_discharge_L_s`
@@ -446,7 +448,7 @@ wrap_table <- function(
 			"Fraction_of_wastewater_advanced_treatment" = Fraction_of_wastewater_advanced_treatment
 		))	
 	has_row_sums <- round(has_row_sums, digits = 5) # avoid rounding inaccuracies
-	if(any(has_row_sums != 1)) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
+	if(STP_discharge_per_capita > 0) if(any(has_row_sums != 1)) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
 	
 	Fraction_of_wastewater_only_C_removal <- round(Fraction_of_wastewater_only_C_removal, digits = 3)
 	Fraction_of_wastewater_nitrification <- round(Fraction_of_wastewater_nitrification, digits = 3)
