@@ -432,8 +432,10 @@ wrap_table <- function(
 	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_no_advanced_treatment <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
 	
-	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(STP_local_discharge_river / sewage_discharge_cumulated_classed, digits = 3)		
-	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge <- Fraction_of_wastewater_no_advanced_treatment * Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge
+	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(sewage_discharge_cumulated_classed / STP_local_discharge_river, digits = 3)	
+	
+	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge <- Fraction_of_wastewater_no_advanced_treatment * 
+		Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge
 	# i.e., = sewage_discharge_cumulated_classed / (STP_local_discharge_river + STP_local_discharge_L_s)
 
 	# rowsums for fractions must add up to 1
