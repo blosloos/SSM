@@ -400,43 +400,43 @@ wrap_table <- function(
 	# only_C_degradation
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "only_C_degradation"] <- 0
-	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
-	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_only_C_removal <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
+	STP_amount_people_cumulated_classed_only_C_degradation <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
+	sewage_discharge_cumulated_classed_only_C_degradation <- STP_amount_people_cumulated_classed_only_C_degradation * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
+	Fraction_of_wastewater_only_C_removal <- sewage_discharge_cumulated_classed_only_C_degradation / STP_cumulated_discharge_L_s
 	
 	# nitrification
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "nitrification"] <- 0
-	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
-	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_nitrification <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
+	STP_amount_people_cumulated_classed_nitrification <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
+	sewage_discharge_cumulated_classed_nitrification <- STP_amount_people_cumulated_classed_nitrification * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
+	Fraction_of_wastewater_nitrification <- sewage_discharge_cumulated_classed_nitrification / STP_cumulated_discharge_L_s
 	
 	# denitrification
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "denitrification"] <- 0
-	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
-	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_denitrification <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
+	STP_amount_people_cumulated_classed_denitrification <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
+	sewage_discharge_cumulated_classed_denitrification <- STP_amount_people_cumulated_classed_denitrification * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
+	Fraction_of_wastewater_denitrification <- sewage_discharge_cumulated_classed_denitrification / STP_cumulated_discharge_L_s
 
 	# has_treatment
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed != "has_treatment"] <- 0
-	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
-	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_advanced_treatment <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
+	STP_amount_people_cumulated_classed_has_treatment <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
+	sewage_discharge_cumulated_classed_has_treatment <- STP_amount_people_cumulated_classed_has_treatment * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
+	Fraction_of_wastewater_advanced_treatment <- sewage_discharge_cumulated_classed_has_treatment / STP_cumulated_discharge_L_s
 	
 	# !has_treatment	
 	STP_amount_people_local_classed <- STP_amount_people_local
 	STP_amount_people_local_classed[classed == "has_treatment"] <- 0
-	STP_amount_people_cumulated_classed <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
-	sewage_discharge_cumulated_classed <- STP_amount_people_cumulated_classed * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
-	Fraction_of_wastewater_no_advanced_treatment <- sewage_discharge_cumulated_classed / STP_cumulated_discharge_L_s
+	STP_amount_people_cumulated_classed_has_no_treatment <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
+	sewage_discharge_cumulated_classed_has_no_treatment <- STP_amount_people_cumulated_classed_has_no_treatment * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
+	Fraction_of_wastewater_no_advanced_treatment <- sewage_discharge_cumulated_classed_has_no_treatment / STP_cumulated_discharge_L_s
 	
-	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(sewage_discharge_cumulated_classed / STP_local_discharge_river, digits = 3)	
+	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(sewage_discharge_cumulated_classed_has_no_treatment / STP_local_discharge_river, digits = 3)	
 	
 	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge <- Fraction_of_wastewater_no_advanced_treatment * 
 		Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge
-	# i.e., = sewage_discharge_cumulated_classed / (STP_local_discharge_river + STP_local_discharge_L_s)
+	# i.e., = sewage_discharge_cumulated_classed_has_no_treatment / (STP_local_discharge_river + STP_local_discharge_L_s)
 
 	# rowsums for fractions must add up to 1
 	has_row_sums <- rowSums(cbind(
