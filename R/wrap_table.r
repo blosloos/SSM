@@ -460,7 +460,7 @@ wrap_table <- function(
 		paste(names(has_row_sums)[has_row_sums_isNA], collapse = ",")
 	))
 	
-	if(STP_discharge_per_capita > 0) if(any(has_row_sums != 1)) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
+	if(STP_discharge_per_capita > 0) if(!all(has_row_sums %in% c(0, 1))) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
 	
 	Fraction_of_wastewater_only_C_removal <- round(Fraction_of_wastewater_only_C_removal, digits = 3)
 	Fraction_of_wastewater_nitrification <- round(Fraction_of_wastewater_nitrification, digits = 3)
