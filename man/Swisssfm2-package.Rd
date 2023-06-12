@@ -11,7 +11,7 @@
 \details{
 
 Calculate local and cumulated loads and concentrations of a compound in a river network, following release from human intake and subsequent elimination in sewage treatment plants (STPs)
-and any lakes  in-between or downstream of those STPs.
+and any lakes in-between or downstream of those STPs, as well as different fractions of STP effluent in the river network.
 
 Function calc_load() is the workhorse of this package, and its documentation should be consulted first to understand what this package does.
 make_topology() is merely an internal helper function for calc_load().

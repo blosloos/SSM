@@ -405,6 +405,7 @@ wrap_table <- function(
 	STP_amount_people_cumulated_classed_only_C_degradation <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed_only_C_degradation <- STP_amount_people_cumulated_classed_only_C_degradation * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_only_C_removal <- sewage_discharge_cumulated_classed_only_C_degradation / STP_cumulated_discharge_L_s
+	Fraction_of_wastewater_only_C_removal[is.na(Fraction_of_wastewater_only_C_removal)] <- 0				# for 0/0 = NaN
 	
 	# nitrification
 	STP_amount_people_local_classed <- STP_amount_people_local
@@ -412,6 +413,7 @@ wrap_table <- function(
 	STP_amount_people_cumulated_classed_nitrification <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed_nitrification <- STP_amount_people_cumulated_classed_nitrification * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_nitrification <- sewage_discharge_cumulated_classed_nitrification / STP_cumulated_discharge_L_s
+	Fraction_of_wastewater_nitrification[is.na(Fraction_of_wastewater_nitrification)] <- 0					# for 0/0 = NaN
 	
 	# denitrification
 	STP_amount_people_local_classed <- STP_amount_people_local
@@ -419,6 +421,7 @@ wrap_table <- function(
 	STP_amount_people_cumulated_classed_denitrification <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed_denitrification <- STP_amount_people_cumulated_classed_denitrification * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_denitrification <- sewage_discharge_cumulated_classed_denitrification / STP_cumulated_discharge_L_s
+	Fraction_of_wastewater_denitrification[is.na(Fraction_of_wastewater_denitrification)] <- 0				# for 0/0 = NaN
 
 	# has_treatment
 	STP_amount_people_local_classed <- STP_amount_people_local
@@ -426,6 +429,7 @@ wrap_table <- function(
 	STP_amount_people_cumulated_classed_has_treatment <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed_has_treatment <- STP_amount_people_cumulated_classed_has_treatment * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_advanced_treatment <- sewage_discharge_cumulated_classed_has_treatment / STP_cumulated_discharge_L_s
+	Fraction_of_wastewater_advanced_treatment[is.na(Fraction_of_wastewater_advanced_treatment)] <- 0		# for 0/0 = NaN
 	
 	# !has_treatment	
 	STP_amount_people_local_classed <- STP_amount_people_local
@@ -433,6 +437,7 @@ wrap_table <- function(
 	STP_amount_people_cumulated_classed_has_no_treatment <- apply(topo_matrix, MARGIN = 2, function(x, y){sum(x * y, na.rm = TRUE)}, y = STP_amount_people_local_classed)
 	sewage_discharge_cumulated_classed_has_no_treatment <- STP_amount_people_cumulated_classed_has_no_treatment * STP_discharge_per_capita / (24 * 60 * 60) 	# convert to [l/s]	
 	Fraction_of_wastewater_no_advanced_treatment <- sewage_discharge_cumulated_classed_has_no_treatment / STP_cumulated_discharge_L_s
+	Fraction_of_wastewater_no_advanced_treatment[is.na(Fraction_of_wastewater_no_advanced_treatment)] <- 0	# for 0/0 = NaN
 	
 	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(sewage_discharge_cumulated_classed_has_no_treatment / STP_local_discharge_river, digits = 3)	
 	
@@ -448,6 +453,13 @@ wrap_table <- function(
 			"Fraction_of_wastewater_advanced_treatment" = Fraction_of_wastewater_advanced_treatment
 		))	
 	has_row_sums <- round(has_row_sums, digits = 5) # avoid rounding inaccuracies
+	
+	has_row_sums_isNA <- which(is.na(has_row_sums))
+	if(length(has_row_sums_isNA)) stop(
+		paste("Problem in wrap_table: NA treatment fractions for entry with ID",
+		paste(names(has_row_sums)[has_row_sums_isNA], collapse = ",")
+	))
+	
 	if(STP_discharge_per_capita > 0) if(any(has_row_sums != 1)) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
 	
 	Fraction_of_wastewater_only_C_removal <- round(Fraction_of_wastewater_only_C_removal, digits = 3)
