@@ -22,6 +22,7 @@
 #'* PAC
 #'* undefined: placeholder for yet unspecified but scheduled advanced treatment, e.g., a mean elimination fraction for GAC, combi, ozonation and PAC.
 #'
+#' @param add_absolute_load Logical, with default FALSE. Add further absolute loads at each node, using column `additional_absolut_load` from the `input_table`.
 #' @param use_columns_local_river_discharge Character vector with two column names from `input_table` for minimum and maximum river discharge `[l / s]` just downstream of an STP or lake. 
 #' The defaults is `c("Q347_L_s_min", "Q347_L_s_max")`. 
 #' @param use_STP_elimination_rate Character vector with two column names from `input_table` for minimum and maximum STP-specific elimination rates, 
