@@ -557,31 +557,33 @@ wrap_table <- function(
 		result_table[3, 3] <- paste(compound_load_gramm_per_capita_and_day, collapse = ", ")
 		result_table[2, 5] <- "scenario year:"
 		result_table[3, 5] <- STP_scenario_year
+		
 		result_table[1, 7] <- "elimitation rates"
-		result_table[2, 7] <- "nitrification:"
-		result_table[3, 7] <- paste(compound_elimination_STP$nitrification, collapse = ", ")
-		result_table[2, 8] <- "denitrification:"
-		result_table[3, 8] <- paste(compound_elimination_STP$denitrification, collapse = ", ")
-		result_table[2, 9] <- "P_elimination:"
-		result_table[3, 9] <- paste(compound_elimination_STP$P_elimination, collapse = ", ")
-		result_table[2, 10] <- "GAC:"
-		result_table[3, 10] <- paste(compound_elimination_STP$GAC, collapse = ", ")
-		result_table[2, 11] <- "combi:"
-		result_table[3, 11] <- paste(compound_elimination_STP$combi, collapse = ", ")
-		result_table[2, 12] <- "ozonation:"
-		result_table[3, 12] <- paste(compound_elimination_STP$ozonation, collapse = ", ")
-		result_table[2, 13] <- "PAC:"
-		result_table[3, 13] <- paste(compound_elimination_STP$PAC, collapse = ", ")
-		result_table[2, 14] <- "undefined:"
-		result_table[3, 14] <- paste(compound_elimination_STP$Ausbau, collapse = ", ")
-		result_table[2, 15] <- "COD_treatment"
-		result_table[3, 15] <- paste(compound_elimination_STP$COD_treatment, collapse = ", ")		
+		result_table[2, 7] <- "COD_treatment"
+		result_table[3, 7] <- paste(compound_elimination_STP$COD_treatment, collapse = ", ")			
+		result_table[2, 8] <- "nitrification:"
+		result_table[3, 8] <- paste(compound_elimination_STP$nitrification, collapse = ", ")
+		result_table[2, 9] <- "denitrification:"
+		result_table[3, 9] <- paste(compound_elimination_STP$denitrification, collapse = ", ")
+		result_table[2, 10] <- "P_elimination:"
+		result_table[3, 10] <- paste(compound_elimination_STP$P_elimination, collapse = ", ")
+		result_table[2, 11] <- "GAC:"
+		result_table[3, 11] <- paste(compound_elimination_STP$GAC, collapse = ", ")
+		result_table[2, 12] <- "combi:"
+		result_table[3, 12] <- paste(compound_elimination_STP$combi, collapse = ", ")
+		result_table[2, 13] <- "ozonation:"
+		result_table[3, 13] <- paste(compound_elimination_STP$ozonation, collapse = ", ")
+		result_table[2, 14] <- "PAC:"
+		result_table[3, 14] <- paste(compound_elimination_STP$PAC, collapse = ", ")
+		result_table[2, 15] <- "undefined:"
+		result_table[3, 15] <- paste(compound_elimination_STP$undefined, collapse = ", ")
+		
 		result_table[1, 17] <- "parameters" 		
 		result_table[2, 17] <- "compound elimination method"		
 		result_table[3, 17] <- as.character(compound_elimination_method)
-		result_table[2, 18] <- "redirection activ?"
+		result_table[2, 18] <- "STP_reroute"
 		result_table[3, 18] <- as.character(STP_reroute)
-		result_table[2, 19] <- "filtering treatment steps?"
+		result_table[2, 19] <- "STP_filter_steps"
 		result_table[3, 19] <- as.character(STP_filter_steps)
 		result_table[2, 20] <- "lake elimination enabled?"
 		result_table[3, 20] <- paste(with_lake_elimination, collapse = ", ")	
