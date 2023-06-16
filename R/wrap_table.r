@@ -467,7 +467,12 @@ wrap_table <- function(
 	Fraction_of_wastewater_denitrification <- round(Fraction_of_wastewater_denitrification, digits = 3)
 	Fraction_of_wastewater_advanced_treatment <- round(Fraction_of_wastewater_advanced_treatment, digits = 3)
 	Fraction_of_wastewater_no_advanced_treatment <- round(Fraction_of_wastewater_no_advanced_treatment, digits = 3)
-		
+	
+	Fraction_STP_discharge_of_river_local_includingSTPdischarge <- round(Fraction_STP_discharge_of_river_local_includingSTPdischarge, digits = 3)
+	Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge <- round(Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge, digits = 3)
+	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge <- round(Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated_includingSTPdischarge, digits = 3)
+	Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated <- round(Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated, digits = 3)
+	
 	result_table <- cbind(result_table, 
 		"STP_local_discharge_L_s" = inhabitants * STP_discharge_per_capita / (24 * 60 * 60),
 		"STP_cumulated_discharge_L_s" = STP_cumulated_discharge_L_s,
