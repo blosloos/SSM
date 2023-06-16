@@ -461,6 +461,11 @@ wrap_table <- function(
 	))
 	
 	if(STP_discharge_per_capita > 0) if(!all(has_row_sums %in% c(0, 1))) stop("Problem in wrap_table: wrong treatment fractions in wrap_table - revise")
+
+	STP_local_discharge_L_s <- round(STP_local_discharge_L_s, digits = 3)
+	STP_cumulated_discharge_L_s <- round(STP_cumulated_discharge_L_s, digits = 3)
+	Fraction_STP_discharge_of_river_local <- round(Fraction_STP_discharge_of_river_local, digits = 3)
+	Fraction_STP_discharge_of_river_cumulated <- round(Fraction_STP_discharge_of_river_cumulated, digits = 3)
 	
 	Fraction_of_wastewater_only_C_removal <- round(Fraction_of_wastewater_only_C_removal, digits = 3)
 	Fraction_of_wastewater_nitrification <- round(Fraction_of_wastewater_nitrification, digits = 3)
