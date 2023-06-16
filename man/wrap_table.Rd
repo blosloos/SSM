@@ -59,8 +59,7 @@ Dataframe with two rows for minium and maximum elimination fractions \verb{[0, 1
 
 \item{with_lake_elimination}{Logical. Include elimination by lakes? Defaults to TRUE.}
 
-\item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
-via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
+\item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, using column \code{additional_absolut_load} from the \code{input_table}.}
 
 \item{use_columns_local_river_discharge}{Character vector with two column names from \code{input_table} for minimum and maximum river discharge \verb{[l / s]} just downstream of an STP or lake.
 The defaults is \code{c("Q347_L_s_min", "Q347_L_s_max")}.}
@@ -93,8 +92,8 @@ The second file is either a csv of Excel format (depending on \code{write_csv}) 
 \item \code{node_count_cumulated}: cumulated number of nodes upstream of a each STP or lake node
 \item \code{Fraction_STP_discharge_of_river_local}: STP_local_discharge_L_s divided by the local river discharge (i.e., first column in argument \code{use_columns_local_river_discharge})
 \item \code{Fraction_STP_discharge_of_river_cumulated}: STP_cumulated_discharge_L_s divided by the local river discharge (i.e., first column in argument \code{use_columns_local_river_discharge})
-\item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated}: local discharge (i.e., first column in argument \code{use_columns_local_river_discharge}) divided by
-the sewage discharge from STPs without advanced treatments.
+\item \code{Fraction_STP_discharge_without_advanced_treatment_of_river_cumulated}: STP_cumulated_discharge_L_s from STPs without advanced treatment divided by
+the local river discharge (i.e., first column in argument \code{use_columns_local_river_discharge})
 \item \code{Fraction_STP_discharge_of_river_local_includingSTPdischarge}: STP_local_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument
 \code{use_columns_local_river_discharge}) and \code{STP_local_discharge_L_s}
 \item \code{Fraction_STP_discharge_of_river_cumulated_includingSTPdischarge}: STP_cumulated_discharge_L_s divided by the sum of local river discharge (i.e., first column in argument
@@ -131,6 +130,8 @@ In contrast to column \code{type_advanced_treatment} of argument \code{STP_treat
 the same column in \code{input_table} may also contain the entry \code{"redirection"}, apart from \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}.
 It redirects the influent from one STP to another \code{redirecting_STP_target_STP_ID} (another column in \link{input_table}) when \code{STP_reroute} is set to TRUE, in combination
 with argument \code{STP_scenario_year} and \code{starting_year_advanced_treatment} (yet another column in \link{input_table}) .
+
+To only use absolute loads and no STP-degradation as compound input, simply set one or both values in \code{compound_load_gramm_per_capita_and_day} to 0.
 }
 \examples{
 

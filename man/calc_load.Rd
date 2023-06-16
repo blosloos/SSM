@@ -62,7 +62,7 @@ Numeric vector of length equal to ID, containing elimination fractions \verb{[0,
 Only used when with_lake_elimination is set to TRUE.}
 
 \item{add_absolute_load}{Logical, with default FALSE. Add further absolute loads at each node, and in additional to the ones calculated
-via compound_load_gramm_per_capita_and_day plus compound_elimination_method?}
+via \code{compound_load_gramm_per_capita_and_day} plus \code{compound_elimination_method}?}
 
 \item{absolute_loads}{Numeric vector of length equal to ID with absolute loads to be added \verb{[g / d]}. Used if add_absolute_load set to TRUE.}
 
@@ -98,6 +98,7 @@ and with a routing based on \code{ID_next}.
 Optionally, and in a fourth stage, these cumulated loads are further degraded in lakes (arguments \code{with_lake_elimination} and \code{lake_eliminination_rates})
 or can receive additional absolut inputs via arguments \code{add_absolute_load} and \code{absolute_loads} (and which are not subject to any elimination).
 For the lake elimination, all loads of upstream STPs are first summed and then reduced by the lake-specific \code{lake_eliminination_rates}.
+To only use absolute loads and no STP-degradation inputs, simply set \code{compound_load_gramm_per_capita_and_day} to 0.
 
 The \code{"compound_specific"} elimination rates are set as a product, and as far as they are relevant at each STP based on input \code{STP_treatment_steps}.
 If a treatment step is not present at an STP, the concerned entry in \code{compound_elimination_STP} is not multiplied into this product, except for
