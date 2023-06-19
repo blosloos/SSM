@@ -258,14 +258,17 @@ wrap_table <- function(
 		)
 	}
 	STP_treatment_steps <- input_table[, c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"), drop = FALSE]
-	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("Problem in wrap_table: STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
-	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("Problem in wrap_table: TP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
-	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop("Problem in wrap_table: STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop(
+		"Problem in wrap_table: STP_treatment_steps on nitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop(
+		"Problem in wrap_table: TP_treatment_steps on denitrification are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
+	if(!all(STP_treatment_steps[, "P_elimination"] %in% c("no", "No", "nein", "Nein", "FALSE", "yes", "Yes", "ja", "Ja", "TRUE", "none"))) stop(
+		"Problem in wrap_table: STP_treatment_steps on P_elimination are not set correctly. These must be any of no, No, FALSE, or TRUE. Please revise the input table.")
 	STP_treatment_steps[is.na(STP_treatment_steps[, "nitrification"]), "nitrification"] <- "No"	
 	STP_treatment_steps[is.na(STP_treatment_steps[, "denitrification"]), "denitrification"] <- "No"	
-	STP_treatment_steps[is.na(STP_treatment_steps[, "P_elimination"]), "P_elimination"] <- "No"
-	STP_treatment_steps[STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined"), "type_advanced_treatment"] <- NA
-	if(STP_filter_steps) STP_treatment_steps[which(as.numeric(STP_treatment_steps[, "starting_year_advanced_treatment"]) > as.numeric(STP_scenario_year)), "type_advanced_treatment"] <- NA		
+	STP_treatment_steps[is.na(STP_treatment_steps[, "P_elimination"]), "P_elimination"] <- "No"	
+	if(STP_filter_steps) STP_treatment_steps[which(as.numeric(STP_treatment_steps[, "starting_year_advanced_treatment"]) > 
+		as.numeric(STP_scenario_year)), "type_advanced_treatment"] <- NA		
 	###############################################	
 
 	###############################################	
