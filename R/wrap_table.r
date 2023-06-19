@@ -387,20 +387,20 @@ wrap_table <- function(
 	classed[
 		(STP_treatment_steps[, "nitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
-		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined", NA))	# NA -> empty cell values
+		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", NA))	# NA -> empty cell values
 	] <- "only_C_degradation"
 	classed[
 		(STP_treatment_steps[, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("no", "No", "nein", "Nein", "FALSE")) & 
-		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined", NA))	# NA -> empty cell values
+		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", NA))	# NA -> empty cell values
 	] <- "nitrification"	
 	classed[
 		(STP_treatment_steps[, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
 		(STP_treatment_steps[, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) & 
-		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined", NA))	# NA -> empty cell values
+		(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", NA))	# NA -> empty cell values
 	] <- "denitrification"		
 	classed[
-		!(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", "undefined", NA))	# NA -> empty cell values
+		!(STP_treatment_steps[, "type_advanced_treatment"] %in% c("redirection", NA))	# NA -> empty cell values
 	] <- "has_treatment"			
 		
 	# only_C_degradation
