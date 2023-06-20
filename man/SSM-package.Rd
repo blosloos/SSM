@@ -30,6 +30,8 @@ Maintainer: \packageMaintainer{SSM}
 }
 \references{
 Ort et al. (ES&T, 2009, 43, pp. 3214-3220)
+
+R. Gulde und P. Wunderlin, «Grenzwertüberschreitungen im Gewässer mit ARA-Ausbau ARA beseitigen - Stoffflussanalyse identifiziert betroffene ARA», VSA-Plattform "Verfahrenstechnik Mikroverunreinigungen", Glattbrugg, 2023.
 }
 
 \keyword{ package }
