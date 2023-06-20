@@ -11,6 +11,9 @@
 
 library(devtools)
 install_github("blosloos/SSM", ref = "main")
+
+# load installed SSM package:
+
 library(SSM)
 ################################################################
 
