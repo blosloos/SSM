@@ -8,6 +8,7 @@ package.skeleton(
 
 library(devtools)
 
+install("C:/PART_4/MS/R_packages/SSM", dependencies = FALSE)
 
 load_all("C:/PART_4/MS/R_packages/SSM")
 
