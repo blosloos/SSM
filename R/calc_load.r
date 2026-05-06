@@ -31,7 +31,7 @@
 #' @param absolute_loads Numeric vector of length equal to ID with absolute loads to be added `[g / d]`. Used if add_absolute_load set to TRUE.
 #' @param return_data Strings `"loads"` (the default) or `"matrix"` to return either the calculated loads or the underlying node routing matrix.
 #'
-#' @description Based on discharge via sewage treatment plantes (STPs) and the elimination rates in STPs
+#' @description Based on the release via sewage treatment plants (STPs) and the elimination rates in STPs
 #' and lakes, this function estimates the locally released and cumulated loads of a compound along a river network. 
 #' 
 #'
@@ -73,6 +73,7 @@
 #'
 #' Note that the `absolute_loads`, if used, are not subjected to any elimination, regardless `"compound_specific"` or `"node_specific"` degradation.
 #'
+#' This function does not calculate concentrations based on STP and river discharges. For this, use [wrap_table()].
 #'
 #' @seealso [wrap_table()]
 #'
@@ -116,7 +117,7 @@
 calc_load <- function(
 	ID,
 	ID_next,
-	inhabitants,	
+	inhabitants,
 	compound_load_gramm_per_capita_and_day,		
 	compound_elimination_method = NULL,
 	compound_elimination_STP = NULL,
@@ -131,27 +132,33 @@ calc_load <- function(
 
 	###############################################
 	# check inputs & defaults
-	if(length(compound_load_gramm_per_capita_and_day) > 1) stop("Problem in calc_load: compound_load_gramm_per_capita_and_day should consist of one value only")
-	if(!identical(length(ID), length(inhabitants))) stop("Problem in calc_load: length of vectro inhabitants not equal to the ID vector.")
+	if(length(compound_load_gramm_per_capita_and_day) > 1) stop("Problem in calc_load: compound_load_gramm_per_capita_and_day should 
+		consist of one value only")
+	if(!identical(length(ID), length(inhabitants))) stop("Problem in calc_load: length of vector inhabitants not equal to the ID vector.")
 	if(!is.numeric(inhabitants)) stop("Problem in calc_load: vector inhabitants must be numeric.")
-	if(any(is.na(inhabitants))) inhabitants[is.na(inhabitants)] <- 0
+	if(any(is.na(inhabitants))) inhabitants[is.na(inhabitants)] <- 0	
 	if(!is.logical(with_lake_elimination)) stop("Problem in calc_load: with_lake_elimination must be logical.")
 	if(!is.logical(add_absolute_load)) stop("Problem in calc_load: add_absolute_load must be logical.")
 	if(!is.data.frame(compound_elimination_STP)) stop("Problem in calc_load, argument compound_elimination_STP is not a dataframe.")
 	if(any(!sapply(compound_elimination_STP, is.numeric))) stop("Problem in calc_load, dataframe compound_elimination_STP has non-numeric entries.")
 	STP_steps_all <- c("COD_treatment", "nitrification", "denitrification", "P_elimination", "GAC", "combi", "ozonation", "PAC", "undefined")
 	not_found <- !(names(compound_elimination_STP) %in% STP_steps_all)
-	if(any(not_found)) stop(paste0("Problem in calc_load, argument compound_elimination_STP: entry ", paste(names(compound_elimination_STP)[not_found], collapse = ", "), " is missing."))
+	if(any(not_found)) stop(paste0("Problem in calc_load, argument compound_elimination_STP: entry ", paste(
+		names(compound_elimination_STP)[not_found], collapse = ", "), " is missing."))
 	if(any((compound_elimination_STP < 0) & (compound_elimination_STP > 1))) stop("Problem in calc_load: compound_elimination_STP not within [0,1]")
-	if(!(compound_elimination_method %in% c("compound_specific", "node_specific"))) stop("Problem in calc_load: invalid compound_elimination_method, must be either compound_specific or STP individual.")
+	if(!(compound_elimination_method %in% c("compound_specific", "node_specific"))) stop("Problem in calc_load: invalid compound_elimination_method, 
+		must be either compound_specific or STP individual.")
 	if(compound_elimination_method == "node_specific"){ 
-		if(STP_elimination_rates[1] == FALSE) stop("Problem in calc_load: compound_elimination_method set to node_specific, but no STP_elimination_rates provided. Please revise.")
-		if(length(STP_elimination_rates) != length(ID)) stop("Problem in calc_load: for node_specific compound_elimination_method, length of STP_elimination_rates must equal that of ID vector.") 
+		if(STP_elimination_rates[1] == FALSE) stop("Problem in calc_load: compound_elimination_method set to node_specific, 
+			but no STP_elimination_rates provided. Please revise.")
+		if(length(STP_elimination_rates) != length(ID)) stop("Problem in calc_load: for node_specific compound_elimination_method, 
+			length of STP_elimination_rates must equal that of ID vector.") 
 		STP_elimination_rates[is.na(as.numeric(STP_elimination_rates))] <- 0
 	}
 	if(compound_elimination_method == "compound_specific"){ 
 		if(nrow(STP_treatment_steps) != length(ID)) stop("Problem in calc_load: number of rows for STP_treatment_steps not equal to length of ID") 
-		if(!all(names(STP_treatment_steps) %in% c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", "starting_year_advanced_treatment"))){
+		if(!all(names(STP_treatment_steps) %in% c("nitrification", "denitrification", "P_elimination", "type_advanced_treatment", 
+			"starting_year_advanced_treatment"))){
 			# ... with starting_year_advanced_treatment used in wrap_table
 			stop("Problem in calc_load: missing or invalid column names for STP_treatment_steps")
 		}
@@ -162,7 +169,7 @@ calc_load <- function(
 	###############################################
  
 	###############################################	
-	# calculate elimiation rates
+	# calculate elimination rates
 	compound_elimination_STP_calc <- rep(0, length(ID))
 	STP_steps_advanced <- c("GAC", "combi", "ozonation", "PAC", "undefined")
 	for(i in 1:length(ID)){
@@ -171,12 +178,14 @@ calc_load <- function(
 		if(compound_elimination_method == "compound_specific"){
 			if(any(STP_treatment_steps[i, c("nitrification", "denitrification", "P_elimination")] == "none")){ # for non-STP nodes
 				if(!all(STP_treatment_steps[i, c("nitrification", "denitrification", "P_elimination")] == "none")) stop(
-					paste0("Problem in calc_load: not all entries in STP_treatment_steps for columns nitrification, denitrification and P_elimination set to none for lake with ID ", ID[i])
+					paste0("Problem in calc_load: not all entries in STP_treatment_steps for columns nitrification, denitrification and 
+						P_elimination set to none for lake with ID ", ID[i])
 				)
 				compound_elimination_STP_calc[i] <- 0
 			}else{	# for STPs
 				compound_elimination_STP_calc[i] <- prod(1 - c(								
-					if(STP_treatment_steps[i, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$nitrification else compound_elimination_STP$COD_treatment,
+					if(STP_treatment_steps[i, "nitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$nitrification else 
+						compound_elimination_STP$COD_treatment,
 					if(STP_treatment_steps[i, "denitrification"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$denitrification,
 					if(STP_treatment_steps[i, "P_elimination"] %in% c("yes", "Yes", "ja", "Ja", "TRUE")) compound_elimination_STP$P_elimination,		
 					if(STP_treatment_steps[i, "type_advanced_treatment"] %in% STP_steps_advanced){
@@ -201,7 +210,7 @@ calc_load <- function(
 	###############################################			
 
 	###############################################
-	# run model: iterate thourhg STP/lake nodes
+	# run model: iterate through STP/lake nodes
 	input_load_local_g_d <- inhabitants * compound_load_gramm_per_capita_and_day 
 	load_local_g_d <- inhabitants * compound_load_gramm_per_capita_and_day * compound_elimination_STP_calc
 	load_local_g_d[is.na(load_local_g_d)] <- 0 # for lakes
@@ -220,9 +229,10 @@ calc_load <- function(
 	do_calc_node <- rep(TRUE, length(ID))
 	topo_matrix <- matrix(nrow = length(ID), ncol = length(ID), 0)
 	colnames(topo_matrix) <- rownames(topo_matrix) <- ID
-	while(any(do_calc_node)){		
+	while(any(do_calc_node)){
 		
 		for(k in 1:length(ID)){ # check through STPs / lakes
+		
 			# (1) still required to be calculated?
 			if(!do_calc_node[k]) next
 			# (2) still awaiting load input, i.e., still another STP points to ID[k]?

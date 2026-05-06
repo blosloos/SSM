@@ -5,33 +5,44 @@
 \alias{input_table}
 \title{Example input table containing sewage treatment plants and lakes}
 \format{
-An object of class data.frame with 683 rows and 29 columns, of which only some or all of the following columns are essential for usage with function \code{\link[=wrap_table]{wrap_table()}}:
+An object of class data.frame with 683 rows and 29 columns, of which only some or all of the following columns are essential for usage with
+function \code{\link[=wrap_table]{wrap_table()}}:
 \itemize{
 \item \code{ID}: unique IDs (numbers or characters) of river network nodes such as STPs and lakes.
 \item \code{inhabitants}: number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
 \item \code{ID_next}: the ID of the next node directly downstream of each node (if any, else set entry to NA).
 \item columns \code{Q347_L_s_min} and \code{Q347_L_s_max}: minimum and maximum discharge just downstream of each STP or a lake outlet \verb{[l / s]}.
+\item \code{Q347_includes_localSTPdischarge}: \code{"TRUE"} or \code{"FALSE"} for whether the values of Q347_L_s_min and Q347_L_s_max already include the STP discharge,
+i.e. whether the discharge has been measured down- or upstream of the STP outlet, respectively. Must be set to \code{"TRUE"} for any non-STP nodes such as lakes.
 }
 
 The following columns are required if \code{compound_elimination_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{"compound_specific"}:
 \itemize{
 \item columns \code{nitrification}, \code{denitrification} and \code{P_elimination}: \code{"TRUE"} or \code{"FALSE"} for STP nodes, and \code{"none"} for lakes or similar.
-\item \code{type_advanced_treatment}: any of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, \code{"redirection"}, or an empty entry if none of this applies for lakes
-or STPs without advanced treatment. Here, \code{"undefined"} is a placeholder for yet unspecified but scheduled advanced treatment;
+\item \code{type_advanced_treatment}: any of \code{"GAC"}, \code{"combi"}, \code{"ozonation"}, \code{"PAC"} or \code{"undefined"}, \code{"redirection"}, or an empty entry if none of this
+applies for lakes or STPs without advanced treatment. Here, \code{"undefined"} is a placeholder for yet unspecified but scheduled advanced treatment;
 \code{"redirection"} implies that an STP will be closed and its influent rerouted to another STP at some point in time.
-\item \code{starting_year_advanced_treatment}: four-digit integer to state the year from which onwards the \code{type_advanced_treatment} applies (including the redirection to another STP).
-\item \code{redirecting_STP_target_STP_ID}: for any STP that contains \code{"redirection"} in \code{type_advanced_treatment}, the ID of another STP to which the discharge of its inhabitants
-is diverted.
+\item \code{starting_year_advanced_treatment}: four-digit integer to state the year from which onwards the \code{type_advanced_treatment} applies (including the
+redirection to another STP).
+\item \code{redirecting_STP_target_STP_ID}: for any STP that contains \code{"redirection"} in \code{type_advanced_treatment}, the ID of another STP to which the discharge
+of its inhabitants is diverted.
 }
 
-The following columns are required if \code{compound_elimination_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{"node_specific"}:
+The following column is required if \code{compound_elimination_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{"node_specific"}:
 \itemize{
-\item columns \code{STP_elimination_min} and \code{STP_elimination_max}: minimum and maximum elimination fractions \verb{[0, 1]} for each STP node. Set elements to NA (or 0) for lakes.
+\item columns \code{STP_elimination_min} and \code{STP_elimination_max}: minimum and maximum elimination fractions \verb{[0, 1]} for each STP node. Set elements to NA (or 0)
+for lakes.
 }
 
-The following columns are required if \code{with_lake_elimination} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{TRUE}:
+The following column is required if \code{STP_discharge_method} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{STP_discharge_input}:
 \itemize{
-\item columns \code{lake_elimination_min} and \code{lake_elimination_max}: minimum and maximum elimination fractions \verb{[0, 1]} for each lake node. Set elements to NA (or 0) for STPs.
+\item \code{STP_local_discharge_L_s}: discharge from each STP \verb{[l / s]}, or 0 for non-STP nodes such as lakes.
+}
+
+The following column is required if \code{with_lake_elimination} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{TRUE}:
+\itemize{
+\item columns \code{lake_elimination_min} and \code{lake_elimination_max}: minimum and maximum elimination fractions \verb{[0, 1]} for each lake node. Set elements to NA (or 0)
+for STPs.
 }
 
 The following column is required if \code{add_absolute_load} in \code{\link[=wrap_table]{wrap_table()}} is set to \code{TRUE}:

@@ -80,7 +80,7 @@ Depending on argument \code{return_data}, either the routing matrix (cp. \code{\
 }
 }
 \description{
-Based on discharge via sewage treatment plantes (STPs) and the elimination rates in STPs
+Based on the release via sewage treatment plants (STPs) and the elimination rates in STPs
 and lakes, this function estimates the locally released and cumulated loads of a compound along a river network.
 }
 \details{
@@ -111,6 +111,8 @@ than \code{"none"} or NA exist for lakes in inputs STP_treatment_steps or STP_el
 and in turn no others than NAs in input lake_eliminination_rates for the STP nodes.
 
 Note that the \code{absolute_loads}, if used, are not subjected to any elimination, regardless \code{"compound_specific"} or \code{"node_specific"} degradation.
+
+This function does not calculate concentrations based on STP and river discharges. For this, use \code{\link[=wrap_table]{wrap_table()}}.
 }
 \examples{
 

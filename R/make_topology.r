@@ -34,10 +34,10 @@ make_topology <- function(
 	# check inputs & defaults 
 	ID_next <- as.character(ID_next)
 	len <- length(ID_next)
-	if(is.null(ID)) ID <- as.character(seq(len)) else{ 
+	ID <- if(is.null(ID)) as.character(seq(len)) else{ 
 		if(length(ID) != len) stop("Problem in make_topology: ID_next and ID must be of same length") 
 		if(any(is.na(ID))) stop("Problem in make_topology: ID must not contain NAs")
-		ID <- as.character(ID)
+		as.character(ID)
 	}
 	if(NA_next_ignore){
 		if(any(!(ID_next[!is.na(ID_next)] %in% ID))) stop("Problem in make_topology: ID and ID_next mismatching")
