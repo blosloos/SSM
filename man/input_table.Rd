@@ -9,7 +9,9 @@ An object of class data.frame with 683 rows and 29 columns, of which only some o
 function \code{\link[=wrap_table]{wrap_table()}}:
 \itemize{
 \item \code{ID}: unique IDs (numbers or characters) of river network nodes such as STPs and lakes.
-\item \code{inhabitants}: number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
+\item \code{inhabitants}: number of inhabitants which are treated by an individual STP node (0 or NA for lakes). This is used to calculate (a) the load of the
+specified compound for each individual STP by using compound_load_gramm_per_capita_and_day and (b) if STP_discharge_method is set to "inhabitants",
+the STP_local_discharge_L_s using STP_discharge_per_capita.
 \item \code{ID_next}: the ID of the next node directly downstream of each node (if any, else set entry to NA).
 \item columns \code{Q347_L_s_min} and \code{Q347_L_s_max}: minimum and maximum discharge just downstream of each STP or a lake outlet \verb{[l / s]}.
 \item \code{Q347_includes_localSTPdischarge}: \code{"TRUE"} or \code{"FALSE"} for whether the values of Q347_L_s_min and Q347_L_s_max already include the STP discharge,

@@ -1,8 +1,8 @@
 Package: SSM
 Type: Package
 Title: Sewage treatment plant surface water model 
-Version: 2.6
-Date: 2026-05-06
+Version: 2.7
+Date: 2026-10-15
 Author: Martin Loos, Rebekka Gulde
 Maintainer: Martin Loos <mloos@envibee.ch>
 Description: Catchment-based micropollutant routing model for sewage treatment plants

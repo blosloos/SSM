@@ -9,21 +9,30 @@
 #'
 #' @format An object of class data.frame with 683 rows and 29 columns, of which only some or all of the following columns are essential for usage with 
 #' function [wrap_table()]:
+#'
 #'* `ID`: unique IDs (numbers or characters) of river network nodes such as STPs and lakes.
-#'* `inhabitants`: number of inhabitants which are treated by an individual STP node (0 or NA for lakes).
+#'
+#'* `inhabitants`: number of inhabitants which are treated by an individual STP node (0 or NA for lakes). This is used to calculate (a) the load of the 
+#' specified compound for each individual STP by using compound_load_gramm_per_capita_and_day and (b) if STP_discharge_method is set to "inhabitants", 
+#' the STP_local_discharge_L_s using STP_discharge_per_capita.
+#'
 #'* `ID_next`: the ID of the next node directly downstream of each node (if any, else set entry to NA).
+#'
 #'* columns `Q347_L_s_min` and `Q347_L_s_max`: minimum and maximum discharge just downstream of each STP or a lake outlet `[l / s]`.
+#'
 #'* `Q347_includes_localSTPdischarge`: `"TRUE"` or `"FALSE"` for whether the values of Q347_L_s_min and Q347_L_s_max already include the STP discharge,
 #' i.e. whether the discharge has been measured down- or upstream of the STP outlet, respectively. Must be set to `"TRUE"` for any non-STP nodes such as lakes.
 #'
 #' The following columns are required if `compound_elimination_method` in [wrap_table()] is set to `"compound_specific"`:
 #'* columns `nitrification`, `denitrification` and `P_elimination`: `"TRUE"` or `"FALSE"` for STP nodes, and `"none"` for lakes or similar.
+#'
 #'* `type_advanced_treatment`: any of `"GAC"`, `"combi"`, `"ozonation"`, `"PAC"` or `"undefined"`, `"redirection"`, or an empty entry if none of this 
 #' applies for lakes or STPs without advanced treatment. Here, `"undefined"` is a placeholder for yet unspecified but scheduled advanced treatment; 
 #' `"redirection"` implies that an STP will be closed and its influent rerouted to another STP at some point in time.
 #' 
 #'* `starting_year_advanced_treatment`: four-digit integer to state the year from which onwards the `type_advanced_treatment` applies (including the 
 #' redirection to another STP).
+#'
 #'* `redirecting_STP_target_STP_ID`: for any STP that contains `"redirection"` in `type_advanced_treatment`, the ID of another STP to which the discharge 
 #' of its inhabitants is diverted.
 #'

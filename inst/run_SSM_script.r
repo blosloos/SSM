@@ -21,15 +21,16 @@ library(SSM)
 # load input table and set path ################################
 
 # path to sewage treatment plant (STP) input table as xlsx
-xlsxFile_path <- "C:/VSA_PF_VT-Mikroverunreinigungen/SSM/20230619/input_table.xlsx"
-# set name of xlsx-Sheet
+xlsxFile_path <- "C:/VSA_PF_VT-Mikroverunreinigungen/04_Kommunale_MV/4.03_Projekte/4.3.18_Wirkungskontrolle/3_Stoffflussmodell/14_neues_Model/6_Skript/3_SSM_Anpassungen/261004/261004_model_inputs_new-Test10_FALSE.xlsx"
+
+# set name of xlsx-Shee
 sheet_name <- "model_inputs"
 
 # load input table
 input_table <- openxlsx:::read.xlsx(xlsxFile = xlsxFile_path, sheet = sheet_name, startRow = 3) # it starts to read at row 3, because there are descriptions in the first two rows of the example input_table
  
 # set path to output folder
-path_out <- "C:/VSA_PF_VT-Mikroverunreinigungen/SSM/20230619/outputs"
+path_out <- "C:/VSA_PF_VT-Mikroverunreinigungen/04_Kommunale_MV/4.03_Projekte/4.3.18_Wirkungskontrolle/3_Stoffflussmodell/14_neues_Model/6_Skript/3_SSM_Anpassungen/261004/SSM/outputs"
 
 
 ################################################################
@@ -43,7 +44,7 @@ path_out <- "C:/VSA_PF_VT-Mikroverunreinigungen/SSM/20230619/outputs"
 compound_name <- "Diclofenac"
 
 # set scenario_name, which will be the name of the output files
-scenario_name <- "DIC_2040_vgl_SFM2_v2"
+scenario_name <- "260510_Test_11"
 
 # set compound load that enters the STP per inhabitant and day. E.g. from calculation of STP measurements or consumption data
 compound_load_gramm_per_capita_and_day <- c(
@@ -73,7 +74,7 @@ compound_elimination_STP <- data.frame(
 	combi = c(0.99, 0.99),
 	ozonation = c(0.99, 0.99),
 	PAC = c(0.85, 0.85),
-	undefined = c(0.99, 0.99)
+	undefined = c(0.85, 0.99)
 )
 
 # total elimination fraction = (COD_treatment OR nitrification) AND (denitrification OR none) AND (P_elimination or none) AND (GAC OR combi OR ozonation OR PAC or undefined or none) 
@@ -94,7 +95,7 @@ STP_reroute <- TRUE						# TRUE or FALSE
 # If "STP_filter_steps" is set to TRUE the script will consider all advanced treatment/redirection (as given in column "type_advanced_treatment"),
 # which are set in column "starting_year_advanced_treatment" before or in the same year than "STP_scenario_year". 
 STP_filter_steps = TRUE # TURE or FALSE 
-STP_scenario_year <- 2040 # yyyy
+STP_scenario_year <- 2021 # yyyy
 
 ################################################################
 # If "TRUE", the load of all STPs upstream of lakes will be reduced by the factor that is given in columns "lake_elimination_min" and	"lake_elimination_max" in the input table
@@ -106,6 +107,12 @@ use_columns_local_river_discharge <- c("Q347_L_s_min", "Q347_L_s_max") # column 
 # the first of these two columns is used to calculate the fraction_STP_discharge_of_river
 
 ################################################################
+# set STP_discharge_method. Needs to be "inhabitants" (default) or "STP_discharge_input"
+# if set to STP_discharge_input it takes the value from the column "STP_local_discharge_L_s" in the input table
+STP_discharge_method <- "inhabitants"
+
+################################################################
+# if STP_discharge_method is set to "inhabitants"
 # the total STP discharge will be calculated by the "inhabitants" of the STP and "STP_discharge_per_capita"
 # The "STP_discharge_per_capita" is the volume of wastewater per inhabitant 
 STP_discharge_per_capita <- 375 # [L/inhabitant/day]
@@ -130,7 +137,8 @@ wrap_table(
 	input_table = input_table,									
 	STP_scenario_year = STP_scenario_year,
 	STP_filter_steps = STP_filter_steps,
-	STP_reroute = STP_reroute,									
+	STP_reroute = STP_reroute,					
+	STP_discharge_method = STP_discharge_method,
 	STP_discharge_per_capita = STP_discharge_per_capita,						
 	compound_name = compound_name,
 	compound_load_gramm_per_capita_and_day = compound_load_gramm_per_capita_and_day,
@@ -149,41 +157,3 @@ wrap_table(
 )
 
 ################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
